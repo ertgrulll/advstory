@@ -28,7 +28,8 @@
 
   ➡️ Well documented.
 
-**_Go to docs:_**
+
+**_Docs and examples:_**
 
 [![docs](https://img.shields.io/badge/AdvStory-Documentation-9cf?style=for-the-badge&logo=gitbook)](https://advstory.sourcekod.com)
 
@@ -36,7 +37,7 @@
 
 #### Some screenshots
 
-<p align="middle">
-    <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/story_view_demo.gif" height="400" hspace="1%"/>
-    <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/adv_story_tray_customizations.gif" height="400" hspace="1%">
+<p align="left">
+    <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/story_view_demo.gif?raw=true" height="400" hspace="1%"/>
+    <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/adv_story_tray_customizations.gif?raw=true" height="400" hspace="1%">
 </p>
