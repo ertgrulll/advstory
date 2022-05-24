@@ -37,7 +37,6 @@
 #### Some screenshots
 
 <p align="middle">
-    <img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FG93zjnS1kiOBnY3NOJ9N%2Fuploads%2FKK6GnnBkyuLextGKLjlb%2Fvertical_trays.png?alt=media&token=61e40ae4-0053-4cbe-b87a-d0aa0a28d434" height="400" hspace="1%"/>
-    <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/story_view_demo.gif"/>
+    <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/story_view_demo.gif" height="400" hspace="1%"/>
     <img src="https://github.com/ertgrulll/advstory/blob/master/github_images/adv_story_tray_customizations.gif" height="400" hspace="1%">
 </p>
