@@ -12,27 +12,27 @@ ___
 
 ## _Features_
 
-  ➡️ High performance, minimum delays, preload and cache enabled. Works using builders,
+➡️ High performance, minimum delays, preload and cache enabled. Works using builders,
    provides flexibility and lazy loading.
 
-  ➡️ Gestures for skip story, skip content, pause, resume and close.
+➡️ Gestures for skip story, skip content, pause, resume and close.
 
-  ➡️ A functional controller for manipulating story flow and listening for user interactions.
+➡️ A functional controller for manipulating story flow and listening for user interactions.
    Allows you to skip, pause, play and more...
 
-  ➡️ Predefined story types for images, videos and simple contents. But not limited to these types, allows you to use base class of predefined widgets. This literally makes the options endless.
+➡️ Predefined story types for images, videos and simple contents. But not limited to these types, allows you to use base class of predefined widgets.    This literally makes the options endless.
 
-  ➡️ Different durations can be set for each story content.
+➡️ Different durations can be set for each story content.
 
-  ➡️ Predefined highly customizable story tray. But you are not limited to that, you can create your own non-animated or animated trays, _`AdvStory`_ handles animation.
+➡️ Predefined highly customizable story tray. But you are not limited to that, you can create your own non-animated or animated trays, _`AdvStory`_ handles animation.
 
-  ➡️ Header and footer areas for stories with customization option specific to a predefined story content.
+➡️ Header and footer areas for stories with customization option specific to a predefined story content.
 
-  ➡️ Full screen option, hides status and navigation bars.
+➡️ Full screen option, hides status and navigation bars.
 
-  ➡️ Object based, you can create as many story views as you want within the same application.
+➡️ Object based, you can create as many story views as you want within the same application.
 
-  ➡️ Well documented, go to docs:
+➡️ Well documented, go to docs:
 
 * [![docs](https://img.shields.io/badge/AdvStory-Documentation-9cflogo=gitbook?color=7395de)](https://advstory.sourcekod.com)
 
