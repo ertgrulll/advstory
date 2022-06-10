@@ -10,37 +10,39 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class BuildHelper {
   /// Provides methods for loading and caching media files from the internet.
   /// Also, provides build methods for media items.
-  BuildHelper({this.clusterBuilder}) {
-    _clusterBuildStack = <int>[].bind(_builderStackHandler);
+  BuildHelper({this.storyBuilder}) {
+    _storyBuildStack = <int>[].bind(_builderStackHandler);
   }
 
-  ClusterBuilder? clusterBuilder;
+  /// The builder function that will be called to build a [Story].
+  StoryBuilder? storyBuilder;
 
-  final clusters = <int, Cluster>{};
+  /// Stors the built stories.
+  final stories = <int, Story>{};
 
-  late final Binded<List<int>> _clusterBuildStack;
+  late final Binded<List<int>> _storyBuildStack;
   bool _hasPriorItem = false;
 
-  /// Pauses cluster builds that has not priority, builds and returns required
-  /// cluster first.
-  Future<Cluster> buildCluster(int index) async {
-    if (!clusters.containsKey(index)) {
+  /// Pauses story builds that has not priority, builds and returns required
+  /// story first.
+  Future<Story> buildStory(int index) async {
+    if (!stories.containsKey(index)) {
       _hasPriorItem = true;
-      await _buildCluster(index);
+      await _buildStory(index);
 
       _hasPriorItem = false;
     }
 
-    _clusterBuildStack.update();
+    _storyBuildStack.update();
 
-    return clusters[index]!;
+    return stories[index]!;
   }
 
-  /// Builds cluster and caches it to memory to make it ready to display.
-  void prepareCluster(int index) {
-    if (clusters.containsKey(index)) return;
+  /// Builds story and caches it to memory to make it ready to display.
+  void prepareStory(int index) {
+    if (stories.containsKey(index)) return;
 
-    _clusterBuildStack.value = [..._clusterBuildStack.value, index];
+    _storyBuildStack.value = [..._storyBuildStack.value, index];
   }
 
   Future<void> _builderStackHandler(List<int> indexes) async {
@@ -50,27 +52,26 @@ class BuildHelper {
       }
 
       final index = indexes.first;
-      _clusterBuildStack.value.removeAt(0);
+      _storyBuildStack.value.removeAt(0);
 
-      await _buildCluster(index);
+      await _buildStory(index);
     }
   }
 
-  Future<void> _buildCluster(int index) async {
-    final cluster = await clusterBuilder!.call(index);
-    clusters[index] = cluster;
+  Future<void> _buildStory(int index) async {
+    stories[index] = await storyBuilder!.call(index);
   }
 
   /// Fetches media file from the internet and caches it to local storage.
   Future<File> getMediaFile({
     required String url,
-    Map<String, String>? headers,
-    String? key,
+    Map<String, String>? requestHeaders,
+    String? cacheKey,
   }) async {
     return DefaultCacheManager().getSingleFile(
       url,
-      key: key ?? url,
-      headers: headers,
+      key: cacheKey ?? url,
+      headers: requestHeaders,
     );
   }
 }

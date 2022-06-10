@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Story progress indicator styles.
 class IndicatorStyle {
+  /// Creates story progress indicator styles.
   const IndicatorStyle({
     this.height = 2.5,
     this.spacing = 3.0,
@@ -23,7 +24,7 @@ class IndicatorStyle {
   ///Color of active and filled indicators. Default value is _[Colors.white]_.
   final Color valueColor;
 
-  /// Empty indicator color. Default value is _Colors.grey.shade300_ with 90%
+  /// Empty indicator color. Default value is `Colors.grey.shade300` with 90%
   /// opacity.
   final Color backgroundColor;
 }

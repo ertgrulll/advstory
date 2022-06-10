@@ -1,40 +1,45 @@
 import 'package:advstory/src/advstory.dart';
 import 'package:advstory/src/model/style/indicator_style.dart';
-import 'package:advstory/src/model/style/shimmer_style.dart';
-import 'package:advstory/src/model/style/tray_style.dart';
-import 'package:advstory/src/view/components/shimmer.dart';
+import 'package:advstory/src/model/style/loading_style.dart';
+import 'package:advstory/src/model/style/tray_list_style.dart';
+import 'package:advstory/src/view/components/loading_indicator.dart';
 import 'package:flutter/material.dart';
 
-/// General styles for the [AdvStory].
+/// Styles for the [AdvStory].
 class AdvStoryStyle {
-  /// General styles for the [AdvStory].
+  /// Creates styles to use in the [AdvStory].
   const AdvStoryStyle({
     this.indicatorStyle = const IndicatorStyle(),
-    this.trayStyle = const TrayStyle(),
-    this.shimmerStyle = const ShimmerStyle(),
+    this.trayListStyle = const TrayListStyle(),
+    this.loadingStyle = const LoadingStyle(),
     this.loadingScreen,
+    this.hideBars = true,
   });
 
   /// Story progress indicator style.
   final IndicatorStyle indicatorStyle;
 
   /// Custom loading screen widget.
-  /// This is useful if you want to use your own loading screen.
+  /// This is useful when you want to use your own loading screen.
   ///
-  /// If not set, shimmer effect will be use as default.
+  /// If not set, [LoadingIndicator] will be use as default.
   final Widget? loadingScreen;
 
-  /// Styles for tray list.
-  final TrayStyle trayStyle;
+  /// Style for default loading screen.
+  final LoadingStyle loadingStyle;
 
-  /// Colors for shimmer effect. This is shown when tray images are loading.
-  final ShimmerStyle shimmerStyle;
+  /// Styles for tray list.
+  final TrayListStyle trayListStyle;
+
+  /// Sets the story view to be full screen or not. Default value is `true`.
+  /// Hides status and navigation bars when story view opened.
+  ///
+  /// _Setting this to false may cause unexpected resizing of the contents._
+  final bool hideBars;
 
   /// Shortcut for loading screen.
   ///
   /// Returns loading screen if provided, otherwise returns default loading
-  /// screen with given or default styles.
-  Widget call() {
-    return loadingScreen ?? Shimmer(style: shimmerStyle);
-  }
+  /// screen with provided or default styles.
+  Widget call() => loadingScreen ?? LoadingIndicator(style: loadingStyle);
 }

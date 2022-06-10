@@ -1,9 +1,11 @@
 import 'package:example/examples/controller_usage.dart';
-import 'package:example/footer_header_showcase.dart';
-import 'package:example/tray_showcase.dart';
-import 'package:example/data_generator.dart';
+import 'package:example/tabs/footer_header_showcase.dart';
+import 'package:example/tabs/story_type_showcase.dart';
+import 'package:example/tabs/tray_showcase.dart';
 import 'package:flutter/material.dart';
 
+/// All examples are in the lib/examples. Other classes are related to
+/// UI and fake data, no need to check them.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const AdvStoryDemoApp());
@@ -30,37 +32,44 @@ class AdvStoryDemo extends StatefulWidget {
 
 class _AdvStoryDemoState extends State<AdvStoryDemo> {
   int _selectedIndex = 0;
-  final data = generateMockData();
-  late final items = [
-    TrayShowcase(data: data),
-    FooterHeaderShowcase(data: data),
-    ControllerUsage(data: data),
+  late final items = const [
+    TrayShowcase(),
+    StoryTypeShowcase(),
+    FooterHeaderShowcase(),
+    ControllerUsage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SafeArea(child: items[_selectedIndex]),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(
-              label: "Tray Options",
-              icon: Icon(Icons.palette_outlined),
-            ),
-            BottomNavigationBarItem(
-              label: "Footer & Header",
-              icon: Icon(Icons.unfold_more_outlined),
-            ),
-            BottomNavigationBarItem(
-              label: "Controller Usage",
-              icon: Icon(Icons.signpost_outlined),
-            ),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.deepOrange,
-          onTap: (index) => setState(() {
-            _selectedIndex = index;
-          }),
-        ));
+      body: SafeArea(child: items[_selectedIndex]),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            label: "Trays",
+            icon: Icon(Icons.palette_outlined),
+          ),
+          BottomNavigationBarItem(
+            label: "Contents",
+            icon: Icon(Icons.extension),
+          ),
+          BottomNavigationBarItem(
+            label: "Footer &\nHeader",
+            icon: Icon(Icons.unfold_more_outlined),
+          ),
+          BottomNavigationBarItem(
+            label: "Controller",
+            icon: Icon(Icons.signpost_outlined),
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.deepOrange,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        onTap: (index) => setState(() {
+          _selectedIndex = index;
+        }),
+      ),
+    );
   }
 }

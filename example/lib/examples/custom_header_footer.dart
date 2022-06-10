@@ -1,15 +1,21 @@
 import 'package:advstory/advstory.dart';
-import 'package:example/data_generator.dart';
+import 'package:example/mock_story_data.dart';
 import 'package:flutter/material.dart';
 
 /// This class is an example of using custom header and footer specific
-/// to a story.
+/// to a story. Creates story specific header&footer for every second story.
+///
+/// When you provide header/footer parameters for `ImageContent` or
+/// `VideoContent`, AdvStory ignores default story header/footer and builds
+/// content-specific components.
+///
+/// [SimpleCustomContent] accepts 'useStoryHeader' and 'useStoryFooter'
+/// parameters, you can apply default story header and footer to
+/// [SimpleCustomContent] or you can create your header/footer in your view.
 class CustomHeaderFooter extends StatelessWidget {
-  const CustomHeaderFooter({required this.data, Key? key}) : super(key: key);
+  const CustomHeaderFooter({Key? key}) : super(key: key);
 
-  final List<User> data;
-
-  /// Provides custom header and footer to every 2 story. Others still use
+  /// Provides custom header and footer to every 2 story. Others use the
   /// the default header and footer.
   Widget? _getStoryComponent(int index, String type, BuildContext context) {
     return index % 2 == 0
@@ -33,79 +39,43 @@ class CustomHeaderFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdvStory(
-      clusterCount: data.length,
-      clusterBuilder: (clusterIndex) {
-        return Cluster(
-          storyCount: data[clusterIndex].stories.length,
-          // Creates default header for cluster.
-          header: ClusterHeader(
-            url: data[clusterIndex].profilePicture,
-            text: data[clusterIndex].username,
+      storyCount: userNames.length,
+      storyBuilder: (storyIndex) {
+        return Story(
+          contentCount: 3,
+          // Creates default header for story.
+          header: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * .1,
+            color: Colors.green.withOpacity(.5),
+            alignment: Alignment.center,
+            child: const Text("Default story header"),
           ),
-          // Creates default footer for cluster.
+          // Creates default footer for story.
           footer: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height * .1,
             color: Colors.green.withOpacity(.5),
             alignment: Alignment.center,
-            child: const Text("Default cluster footer"),
+            child: const Text("Default story footer"),
           ),
-          storyBuilder: (storyIndex) {
-            final story = data[clusterIndex].stories[storyIndex];
+          contentBuilder: (contentIndex) {
+            final header = _getStoryComponent(contentIndex, "header", context);
+            final footer = _getStoryComponent(contentIndex, "footer", context);
 
-            final header = _getStoryComponent(
-              storyIndex,
-              "header",
-              context,
+            return ImageContent(
+              url: imageUrls[contentIndex],
+              header: header,
+              footer: footer,
             );
-
-            final footer = _getStoryComponent(
-              storyIndex,
-              "footer",
-              context,
-            );
-
-            switch (story.mediaType) {
-              case MediaType.video:
-                return VideoStory(
-                  url: story.url,
-                  header: header,
-                  footer: footer,
-                );
-
-              case MediaType.image:
-                return ImageStory(
-                  url: story.url,
-                  header: header,
-                  footer: footer,
-                );
-              case MediaType.widget:
-                return WidgetStory(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    alignment: Alignment.center,
-                    color: Colors.orange,
-                    child: const Text(
-                      "AdvStory supports custom widgets as stories.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                );
-            }
           },
         );
       },
       trayBuilder: (index) {
         return AdvStoryTray(
-          url: data[index].profilePicture,
+          url: profilePics[index],
           username: Text(
-            data[index].username,
+            userNames[index],
             style: const TextStyle(
               color: Colors.black87,
               fontSize: 11,

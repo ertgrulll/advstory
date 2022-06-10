@@ -1,30 +1,36 @@
-import 'package:advstory/advstory.dart';
+import 'dart:io';
+
+import 'package:advstory/src/advstory.dart';
 import 'package:advstory/src/contants/types.dart';
-import 'package:advstory/src/controller/story_controller_impl.dart';
+import 'package:advstory/src/controller/advstory_controller_impl.dart';
+import 'package:advstory/src/model/story_position.dart';
+import 'package:advstory/src/view/components/contents/video_content.dart';
 
-/// Base class for controlling [AdvStory].
+/// A controller for [AdvStory].
+///
+/// This controller lets you to skip, pause, resume contents and stories,
+/// show and hide widgets on story contents, enable or disable gestures,
+/// and more.
 abstract class AdvStoryController {
-  /// Provides methods for manipulating [AdvStory] default flow and listening
-  /// events.
+  /// Creates an AdvStoryController.
   ///
-  /// Default story skip duration is 10 seconds for image and widget
-  /// stories, video duration for video stories. [duration] only affects image
-  /// and widget stories.
-  factory AdvStoryController({Duration duration}) = AdvStoryControllerImpl;
+  /// Check [hasClient] before calling methods.
+  factory AdvStoryController() = AdvStoryControllerImpl;
 
-  /// Currently displaying story index in the current cluster.
-  int get storyIndex;
-
-  /// Returns true if a cluster view is currently visible. Some methods like
-  /// [toNextStory], [toPreviousCluster] can't be used and throws an exception
-  /// if the cluster is not visible.
+  /// Returns true if a story view is currently visible. Most methods like
+  /// [toNextContent], [toPreviousStory] can't be used and throws an exception
+  /// if the story view is not visible.
   bool get hasClient;
 
-  /// Currently displaying cluster index.
-  int? get clusterIndex;
+  /// Displaying story and content position. Returns `0,0` if no story is
+  /// currently displayed.
+  StoryPosition get position;
 
-  /// Total story count in currently displaying cluster.
-  int? get storyCount;
+  /// Total count of stories.
+  int get storyCount;
+
+  /// Total content count in currently displaying story.
+  int get contentCount;
 
   /// If gestures are disabled returns true, otherwise false.
   bool get isGesturesDisabled;
@@ -33,89 +39,140 @@ abstract class AdvStoryController {
   /// otherwise.
   bool get isComponentsVisible;
 
-  /// Jumps to the [storyIndex] in cluster [clusterIndex].
+  /// Returns true if the story is paused, false otherwise.
+  bool get isPaused;
+
+  /// Jumps to the [content] in story [story].
   ///
-  /// Throws an exception if one of the indexes is not valid. Cluster's
-  /// building lazily, no way to know story count before building. Ensure that
-  /// cluster has enough stories to jump to the [storyIndex] before try to jump.
-  void jumpTo(int clusterIndex, int storyIndex);
+  /// Throws an exception if one of the indexes is out of range. Ensure that
+  /// story has enough content to jump to the [content] before try to jump.
+  void jumpTo({required int story, required int content});
 
-  /// Skips to the next cluster if available. Otherwise closes the story view.
-  void toNextCluster();
-
-  /// Skips to the previous cluster if available. Otherwise does nothing.
-  void toPreviousCluster();
-
-  /// Skips to the next story if available. Otherwise skips to the next cluster
-  /// or closes the story view.
+  /// Skips to the next story if available. Otherwise closes the story view.
+  ///
+  /// See also:
+  /// * [toPreviousStory], which skips to the previous story.
+  /// * [toNextContent], which skips to the next content.
   void toNextStory();
 
-  /// Skips to previous story if available. Otherwise skips to the previous
-  /// cluster or does nothing.
+  /// Skips to the previous story if available. Otherwise does nothing.
+  ///
+  /// See also:
+  /// * [toNextStory], which skips to the next story.
+  /// * [toPreviousContent], which skips to the previous content.
   void toPreviousStory();
 
-  /// Shows header, footer and story indicator
+  /// Skips to the next content if available. Otherwise skips to the next story
+  /// or closes the story view.
+  ///
+  /// See also:
+  /// * [toPreviousContent], which skips to the previous content.
+  /// * [toNextStory], which skips to the next story.
+  void toNextContent();
+
+  /// Skips to previous content if available. Otherwise skips to the previous
+  /// story or does nothing.
+  ///
+  /// See also:
+  /// * [toNextContent], which skips to the next content.
+  /// * [toPreviousStory], which skips to the previous story.
+  void toPreviousContent();
+
+  /// Shows header, footer and story indicator.
+  ///
+  /// See also:
+  ///  * [hideComponents], which hides shown header, footer and story indicator.
   void showComponents();
 
-  /// Hides header, footer and story indicator
+  /// Hides header, footer and story indicator. When gestures didn't disabled
+  /// user can show them by tapping screen.
+  ///
+  /// See also:
+  /// * [showComponents], which shows previously hidden header, footer and
+  /// story indicator.
   void hideComponents();
 
   /// Pauses the current story, this stops the timer and the story will not
-  /// advance to the next item.
+  /// skip to the next item. This method doesn't hide header, footer and
+  /// indicator after pause.
   ///
-  /// Pauses the video if current story is a [VideoStory].
+  /// Pauses the video if current story is a [VideoContent].
+  ///
+  /// See also:
+  ///
+  ///  * [resume], which resumes the story from the paused state.
+  ///  * [hideComponents], which hides header, footer and indicator.
+  ///  * [isPaused], which returns true if the story is paused.
   void pause();
 
-  /// Resumes the current story, this starts the timer from last position
-  /// and the story will advances as usual.
+  /// Resumes the current story, starts the timer and indicator from last
+  /// position and story skips as usual.
   ///
-  /// Resumes the video if current story is a [VideoStory].
+  /// Resumes the video if current story is a [VideoContent].
+  ///
+  /// /// See also:
+  ///
+  ///  * [pause], which resumes the story from the paused state.
   void resume();
 
   /// Prevents gesture events.
   ///
-  /// This causes to user to be unable to swiping the cluster, moving to the
-  /// next or previous story, pausing, resuming and closing the view.
-  /// Android back button remains available for closing.
-  /// Automatic skipping still works on story duration end.
+  /// This causes to user to be unable to swiping the story, skipping to the
+  /// next or previous content, pausing, resuming and closing the view.
   ///
-  /// ***Gestures should enable by calling [enableGestures] after
-  /// calling this method. Otherwise user cannot use gestures anymore.***
+  /// Note that:
+  /// * _Android back button still works for closing._
+  /// * _Automatic skipping still works on story duration end. If you want to
+  /// prevent this, use combination of [disableGestures] and [pause]_
+  ///
+  /// Gestures should enable by calling [enableGestures] after calling this
+  /// method. Otherwise AdvStory doesn't responds gestures anymore.
+  ///
+  /// See also:
+  ///
+  ///  * [enableGestures], which enables if gestures previously disabled.
   void disableGestures();
 
-  /// Allows gesture events if disabled.
+  /// Allows gesture events.
+  ///
+  /// See also:
+  ///
+  ///  * [disableGestures], which disables gestures if previously enabled.
   void enableGestures();
 
-  /// Adds a listener callback for events.
+  /// Register a closure to be called when any story event happens.
   ///
   /// Called when:
-  /// * A story is skipped
-  /// * A story is paused by long pressing to screen or played by
-  /// releasing press.
-  /// * A tray is tapped.
-  /// * A cluster is skipped or closed.
+  /// * a content is skipped,
+  /// * a content is paused
+  /// * a tray is tapped.
+  /// * a story is skipped
+  /// * story view closed.
   ///
   /// _Events may be triggered by user or automatically._
   ///
   /// **Listener parameters:**
   /// 1. Type of the event.
-  /// 2. Position of the currently displaying cluster and story.
+  /// 2. Position of the currently displaying story and content.
+  ///
+  /// See also:
+  ///
+  ///  * [removeListener], which removes a previously registered closure from
+  ///    the list of closures that are notified when the object changes.
   void addListener(StoryEventCallback callback);
 
-  /// Removes a listener. Call this method when you don't need to listen events
-  /// anymore.
+  /// Remove a previously registered closure from the list of closures that are
+  /// notified when the object changes.
+  ///
+  /// If the given listener is not registered, the call is ignored.
+  /// Call this method when you don't need to listen events anymore.
   void removeListener(StoryEventCallback listener);
-
-  /// Sets volume level for [VideoStory]. This only affects currently playing
-  /// video. If story is not a video, this method does nothing.
-  void setVolume(double level);
 
   /// Useful when you want to extend [AdvStory] media load strategy.
   ///
-  /// By default, [AdvStory] loads media in the background before 2 story.
-  /// For example when user starts to display first story, third story media
-  /// file starts loading.
-  Future<void> preloadMediaFile({
+  /// By default, [AdvStory] loads previous and next contents media in the
+  /// background.
+  Future<File> preloadMediaFile({
     required String url,
     String? cacheKey,
     Map<String, String>? requestHeaders,

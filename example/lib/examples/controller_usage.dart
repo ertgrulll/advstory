@@ -1,11 +1,9 @@
-import 'package:example/data_generator.dart';
+import 'package:example/mock_story_data.dart';
 import 'package:flutter/material.dart';
 import 'package:advstory/advstory.dart';
 
 class ControllerUsage extends StatefulWidget {
-  const ControllerUsage({required this.data, Key? key}) : super(key: key);
-
-  final List<User> data;
+  const ControllerUsage({Key? key}) : super(key: key);
 
   @override
   State<ControllerUsage> createState() => _ControllerUsageState();
@@ -33,8 +31,8 @@ class _ControllerUsageState extends State<ControllerUsage> {
               left: 20,
             ),
             content: Text(
-              "Event: ${event.name}, cluster: ${position.cluster}, "
-              "story: ${position.story}",
+              "Event: ${event.name}, story: ${position.story}, "
+              "content: ${position.content}",
             ),
           ),
         );
@@ -59,11 +57,11 @@ class _ControllerUsageState extends State<ControllerUsage> {
         direction: Axis.horizontal,
         children: [
           IconButton(
-            onPressed: _controller.toPreviousCluster,
+            onPressed: _controller.toPreviousStory,
             icon: const Icon(Icons.undo),
           ),
           IconButton(
-            onPressed: _controller.toPreviousStory,
+            onPressed: _controller.toPreviousContent,
             icon: const Icon(Icons.skip_previous),
           ),
           IconButton(
@@ -75,11 +73,11 @@ class _ControllerUsageState extends State<ControllerUsage> {
             icon: const Icon(Icons.play_arrow),
           ),
           IconButton(
-            onPressed: _controller.toNextStory,
+            onPressed: _controller.toNextContent,
             icon: const Icon(Icons.skip_next),
           ),
           IconButton(
-            onPressed: _controller.toNextCluster,
+            onPressed: _controller.toNextStory,
             icon: const Icon(Icons.redo),
           ),
           IconButton(
@@ -99,12 +97,8 @@ class _ControllerUsageState extends State<ControllerUsage> {
             icon: const Icon(Icons.visibility),
           ),
           IconButton(
-            onPressed: () => _controller.jumpTo(0, 0),
+            onPressed: () => _controller.jumpTo(story: 0, content: 0),
             icon: const Icon(Icons.navigation),
-          ),
-          IconButton(
-            onPressed: () => _controller.setVolume(0),
-            icon: const Icon(Icons.volume_up),
           ),
         ],
       ),
@@ -130,10 +124,10 @@ class _ControllerUsageState extends State<ControllerUsage> {
       crossAxisCount: 2,
       childAspectRatio: 4,
       children: [
-        _desc(Icons.undo, "To previous cluster"),
-        _desc(Icons.redo, "To next cluster"),
-        _desc(Icons.skip_previous, "To previous story"),
-        _desc(Icons.skip_next, "To next story"),
+        _desc(Icons.undo, "To previous story"),
+        _desc(Icons.redo, "To next story"),
+        _desc(Icons.skip_previous, "To previous content"),
+        _desc(Icons.skip_next, "To next content"),
         _desc(Icons.pause, "Pause"),
         _desc(Icons.play_arrow, "Resume"),
         _desc(Icons.do_not_touch_rounded, "Disable gestures"),
@@ -141,7 +135,6 @@ class _ControllerUsageState extends State<ControllerUsage> {
         _desc(Icons.visibility_off, "Hide components"),
         _desc(Icons.visibility, "Show components"),
         _desc(Icons.navigation, "Jump to position"),
-        _desc(Icons.volume_up, "Set volume"),
       ],
     );
   }
@@ -183,43 +176,33 @@ class _ControllerUsageState extends State<ControllerUsage> {
               child: AdvStory(
                 key: _key,
                 controller: _controller,
-                clusterCount: widget.data.length,
-                clusterBuilder: (index) => Cluster(
-                  storyCount: widget.data[index].stories.length,
+                storyCount: userNames.length,
+                storyBuilder: (index) => Story(
                   footer: _buildActionFooter(),
-                  storyBuilder: (storyIndex) {
-                    final story = widget.data[index].stories[storyIndex];
-
-                    switch (story.mediaType) {
-                      case MediaType.video:
-                        return VideoStory(
-                          url: story.url,
-                        );
-
-                      case MediaType.image:
-                        return ImageStory(url: story.url);
-
-                      case MediaType.widget:
-                        return WidgetStory(
-                          child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height,
-                            alignment: Alignment.center,
-                            color: Colors.orange,
-                            child: const Text(
-                              "This is a widget story",
-                              style: TextStyle(
+                  contentCount: 3,
+                  contentBuilder: (contentIndex) {
+                    return SimpleCustomContent(
+                      useStoryFooter: true,
+                      builder: (context) {
+                        return Container(
+                          color: Colors.deepOrangeAccent,
+                          child: Center(
+                            child: Text(
+                              "Content $contentIndex",
+                              style: const TextStyle(
                                 fontSize: 20,
                                 color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         );
-                    }
+                      },
+                    );
                   },
                 ),
                 trayBuilder: (index) => AdvStoryTray(
-                  url: widget.data[index].profilePicture,
+                  url: profilePics[index],
                 ),
               ),
             ),

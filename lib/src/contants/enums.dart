@@ -1,21 +1,36 @@
 /// Event types
 enum StoryEvent {
-  /// The user has tapped on a cluster tray
+  /// Tapped on a story tray
   trayTap,
 
-  /// Swiped to the next or previous cluster by the user or automatically
-  clusterSkip,
-
-  /// Skipped to the next or previous story by the user or automatically
+  /// Swiped to the next or previous story by the user or automatically skipped.
   storySkip,
 
-  /// The user has tapped on a story to pause the story
+  /// Skipped to the next or previous content by the user or automatically
+  contentSkip,
+
+  /// Long pressed to pause the story or called `pause()`.
   pause,
 
-  /// The user has cancelled tap to resume the story
+  /// Released long press to resume the story or called `resume()`.
   resume,
 
-  /// The user has swiped down to close the story view or has reached to
-  /// the end of the stories.
+  /// Swiped down to close the story view or has reached to the end of the
+  /// stories.
   close,
+}
+
+/// Status types of a story
+enum StoryStatus {
+  /// Story is playing
+  play,
+
+  /// Story is paused
+  pause,
+
+  /// Story is skipped
+  stop,
+
+  /// Story is resumed
+  resume,
 }

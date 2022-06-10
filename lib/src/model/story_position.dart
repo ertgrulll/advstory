@@ -1,21 +1,25 @@
 /// Position of the story.
 ///
-/// This class is equatable, you can compare postions using == operator.
+/// This class is equatable, you can compare positions using == operator.
 class StoryPosition {
-  StoryPosition(this.story, this.cluster);
+  /// Creates a new story position.
+  StoryPosition(this.content, this.story);
 
-  /// Index of currently displaying story in cluster.
+  /// Index of the content in story.
+  final int content;
+
+  /// Index of the story.
   final int story;
-
-  /// Index of currently displaying cluster.
-  final int cluster;
 
   @override
   bool operator ==(Object other) =>
       other is StoryPosition &&
-      story == other.story &&
-      cluster == other.cluster;
+      content == other.content &&
+      story == other.story;
 
   @override
-  int get hashCode => Object.hash(story, cluster);
+  int get hashCode => Object.hash(content, story);
+
+  @override
+  String toString() => 'StoryPosition(content: $content, story: $story)';
 }

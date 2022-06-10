@@ -1,9 +1,12 @@
 import 'package:advstory/src/model/models.dart';
+import 'package:advstory/src/model/style/shimmer_style.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart' as shimmer;
 
+/// Shimmer effect shown when default components images are getting ready
+/// to show.
 class Shimmer extends StatelessWidget {
-  /// Creates a placeholder shimmer effect while media files loading.
+  /// Creates a shimmer loading screen.
   const Shimmer({
     required this.style,
     Key? key,

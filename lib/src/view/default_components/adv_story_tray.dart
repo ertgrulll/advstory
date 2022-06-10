@@ -1,16 +1,31 @@
-import 'dart:math' as math;
-
 import 'package:advstory/advstory.dart';
+import 'package:advstory/src/util/animated_border_painter.dart';
 import 'package:advstory/src/view/components/shimmer.dart';
 import 'package:flutter/material.dart';
 
-/// Animated container that displays a circular image with Instagram like
-/// gradinet border.
+/// A highly customizable animated story tray.
+///
+/// Circular or rectangular image with gradient border. Shows shimmer effect
+/// when tray image is getting ready to show.
+///
+/// When tapped, this widget starts a border rotation animation and stops the
+/// animation when [AdvStory] prepares the contents of the tray.
+///
+/// [AdvStoryTray] is a predefined component, any widget can be used as a
+/// story tray but it's recommended to create an animated tray by extending
+/// [AnimatedTray] class.
+///
+/// ---
+/// AdvStory checks the tray widget type when the tray builder is called. If
+/// tray is subtype of [AnimatedTray], [AdvStory] prepares the tray content
+/// before displaying the story view and manages the starting and stopping of
+/// the tray animation.
+///
+/// See [AnimatedTray] for more information.
 class AdvStoryTray extends AnimatedTray {
-  /// Pre defined story tray for AdvStory.
-  /// This widget will shown to user in a horizontal or vertical list.
+  /// Creates a story tray to show in story tray list.
   ///
-  /// [borderRadius] is the radius of the border that wraps the tray image.
+  /// [borderRadius] sets tray and image border shape.
   AdvStoryTray({
     Key? key,
     required this.url,
@@ -32,13 +47,7 @@ class AdvStoryTray extends AnimatedTray {
     this.animationDuration = const Duration(milliseconds: 1200),
     double? borderRadius,
   })  : assert(
-          () {
-            if (shape == BoxShape.circle) {
-              return size.width == size.height;
-            }
-
-            return true;
-          }(),
+          (() => shape == BoxShape.circle ? size.width == size.height : true)(),
           'Size width and height must be equal for a circular tray',
         ),
         assert(
@@ -50,29 +59,30 @@ class AdvStoryTray extends AnimatedTray {
             : borderRadius ?? size.width / 10,
         super(key: key);
 
-  /// Image url. Creates a circular image using this url.
+  /// Image url that shown as tray.
   final String url;
 
-  /// Username of the user who posted the story. Displays this username
-  /// in the bottom of the story tray.
+  /// Name of the user who posted the story. This username is displayed
+  /// below the story tray.
   final Widget? username;
 
-  /// The size of the story tray.
+  /// Size of the story tray. For a circular tray, width and height must be
+  /// equal.
   final Size size;
 
-  /// Border gradient colors. Two same colors will create a solid border.
+  /// Border gradient colors. Two same color creates a solid border.
   final List<Color> borderGradientColors;
 
-  /// The style of the shimmer that showing untill media load.
+  /// Style of the shimmer that showing while preparing the tray content.
   final ShimmerStyle shimmerStyle;
 
   /// Shap of the tray.
   final BoxShape shape;
 
-  /// The stroke of the border that wraps the tray image.
+  /// Width of the stroke that wraps the tray image.
   final double strokeWidth;
 
-  /// The radius of the border that wraps the tray image.
+  /// Radius of the border that wraps the tray image.
   final double borderRadius;
 
   /// Transparent area size between image and the border.
@@ -82,11 +92,11 @@ class AdvStoryTray extends AnimatedTray {
   final Duration animationDuration;
 
   @override
-  AdvStoryTrayState createState() => AdvStoryTrayState();
+  AnimatedTrayState<AdvStoryTray> createState() => _AdvStoryTrayState();
 }
 
 /// State of the [AdvStoryTray] widget.
-class AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
+class _AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
     with TickerProviderStateMixin {
   late final _rotationController = AnimationController(
     vsync: this,
@@ -159,7 +169,7 @@ class AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
           child: Stack(
             children: [
               CustomPaint(
-                painter: _BorderPainter(
+                painter: AnimatedBorderPainter(
                   gradientColors: _gradientColors,
                   gapSize: widget.gapSize,
                   radius: widget.shape == BoxShape.circle
@@ -207,10 +217,7 @@ class AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
                           : Shimmer(style: widget.shimmerStyle);
                     },
                     errorBuilder: (_, __, ___) {
-                      return Icon(
-                        Icons.error,
-                        color: widget.shimmerStyle.baseColor,
-                      );
+                      return const Icon(Icons.error);
                     },
                   ),
                 ),
@@ -228,80 +235,4 @@ class AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
       ],
     );
   }
-}
-
-/// Creates an animated border that wraps the tray image.
-class _BorderPainter extends CustomPainter {
-  _BorderPainter({
-    required this.strokeWidth,
-    required this.radius,
-    required this.gradientColors,
-    required this.gapSize,
-    required this.animation,
-  }) : super(repaint: animation);
-
-  final double gapSize;
-  final double radius;
-  final double strokeWidth;
-  final List<Color> gradientColors;
-  final Animation<double> animation;
-
-  final _painter = Paint();
-  late final Rect _outerRect;
-  Path? path;
-
-  /// Creates path for tray border. This path is not changes when tray
-  /// animating.
-  Path _createPath(Size size) {
-    // Create outer rectangle equals size
-    _outerRect = Offset.zero & size;
-    final outerRRect =
-        RRect.fromRectAndRadius(_outerRect, Radius.circular(radius));
-
-    // Create inner rectangle smaller by strokeWidth
-    final Rect innerRect = Rect.fromLTWH(
-      strokeWidth,
-      strokeWidth,
-      size.width - strokeWidth * 2,
-      size.height - strokeWidth * 2,
-    );
-
-    final innerRRect = RRect.fromRectAndRadius(
-      innerRect,
-      Radius.circular(
-        radius - strokeWidth,
-      ),
-    );
-
-    // Create difference between outer and inner paths and draw it
-    final Path path1 = Path()..addRRect(outerRRect);
-    final Path path2 = Path()..addRRect(innerRRect);
-
-    return Path.combine(PathOperation.difference, path1, path2);
-  }
-
-  /// Updates shader using current animation value.
-  Paint _updateShader() {
-    // Rotate gradient to create gradient effect.
-    final gradient = SweepGradient(
-      colors: gradientColors,
-      transform: GradientRotation(animation.value * 2 * math.pi),
-    );
-
-    // Apply gradient shader
-    _painter.shader = gradient.createShader(_outerRect);
-
-    return _painter;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    path ??= _createPath(size);
-    _updateShader();
-
-    canvas.drawPath(path!, _painter);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }

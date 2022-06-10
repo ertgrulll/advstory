@@ -1,6 +1,6 @@
 import 'dart:async';
 
-/// Utility class for creating future tasks.
+/// Utility class for creating cancelable future tasks.
 class Cron {
   Duration? _duration;
   Timer? _timer;
@@ -36,7 +36,7 @@ class Cron {
     _duration = _duration! - _stopWatch.elapsed;
   }
 
-  /// Resumes current timer.
+  /// Resumes current timer from last position.
   void resume() {
     if (_timer == null || _duration == null) return;
 

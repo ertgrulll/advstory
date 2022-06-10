@@ -1,85 +1,96 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:advstory/src/contants/enums.dart';
 import 'package:advstory/src/contants/types.dart';
 import 'package:advstory/src/controller/advstory_controller.dart';
-import 'package:advstory/src/controller/story_controller_impl.dart';
-import 'package:advstory/src/model/cluster.dart';
-import 'package:advstory/src/model/story_position.dart';
-import 'package:advstory/src/model/story_resource.dart';
+import 'package:advstory/src/controller/advstory_controller_impl.dart';
+import 'package:advstory/src/model/story.dart';
 import 'package:advstory/src/model/style/advstory_style.dart';
-import 'package:advstory/src/model/types/image_story.dart';
-import 'package:advstory/src/model/types/story.dart';
-import 'package:advstory/src/model/types/video_story.dart';
-import 'package:advstory/src/model/types/widget_story.dart';
 import 'package:advstory/src/util/extended_page_controller.dart';
 import 'package:advstory/src/util/build_helper.dart';
-import 'package:advstory/src/view/cluster_view.dart';
+import 'package:advstory/src/util/position_notifier.dart';
+import 'package:advstory/src/view/components/contents/simple_custom_content.dart';
+import 'package:advstory/src/view/story_view.dart';
 import 'package:advstory/src/view/components/tray/animated_tray.dart';
 import 'package:advstory/src/view/components/tray/animation_manager.dart';
-import 'package:advstory/src/view/components/tray/animation_notifier.dart';
-import 'package:advstory/src/view/data_provider.dart';
+import 'package:advstory/src/view/inherited_widgets/data_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:flutter/services.dart';
 
-/// AdvStory is a package that helps you to create stories.
+/// An advanced story viewer for Flutter, designed for performance.
+///
+/// ___
+/// _Quite easy & Quite advanced_
 class AdvStory extends StatefulWidget {
-  /// An advanced story viewer for flutter.
-  ///
-  /// Available Gestures:
-  /// * Swipe right: skips previous cluster if available, otherwise does nothing
-  /// * Swipe left: skips next cluster if available, otherwise closes story view
-  /// * Swipe down: closes story view.
-  /// * Touch to right: skip to next story or skip to next cluster if available,
-  ///  otherwise closes story view.
-  /// * Touch to left: skip to previous story or skip to previous cluster
-  /// if available, otherwise does nothing.
-  /// * Long press: pauses story.
-  /// * Releasing long press: resumes story.
+  /// Creates a story tray list using [trayBuilder]. When a tray tapped calls
+  /// [storyBuilder] and starts story flow.
   const AdvStory({
-    required this.clusterCount,
-    required this.clusterBuilder,
+    required this.storyCount,
+    required this.storyBuilder,
     required this.trayBuilder,
     this.controller,
+    this.buildStoryOnTrayScroll = true,
+    this.preloadStory = true,
+    this.preloadContent = true,
     this.style = const AdvStoryStyle(),
-    this.buildClustersOnTrayScroll = true,
-    this.hideBars = true,
     Key? key,
   }) : super(key: key);
 
   /// Styles for the AdvStory.
   final AdvStoryStyle style;
 
-  /// Provides methods for manuplating default story flow and listening events.
+  /// Provides methods for manipulating default story flow and listening events.
   final AdvStoryController? controller;
 
-  /// The number of [Cluster]s to build and display.
-  final int clusterCount;
+  /// The number of [Story]s to build and display.
+  final int storyCount;
 
-  /// Builds the [Cluster]s.
+  /// Builds the [Story]s.
   ///
-  /// This fumction can be async to provide lazy loading.
-  final ClusterBuilder clusterBuilder;
+  /// This function can be async to provide lazy loading.
+  final StoryBuilder storyBuilder;
 
-  /// Builds a widget that shown in list for every cluster.
-  /// Most probably cluster owner's profile picture.
+  /// Builds a widget that shown in list for every story.
+  /// Most probably story owner's profile picture.
   ///
-  /// Each cluster must have a tray.
+  /// Each story must have a tray.
   final TrayBuilder trayBuilder;
 
-  /// Sets whether clusters are build when tray list is scrolled or the tray is
+  /// Sets whether stories are build when tray list is scrolled or the tray is
   /// tapped.
   ///
   /// Speeds up the opening time of story view when tray is tapped if this set
-  /// to true, also increases frequency of calling [clusterBuilder]. If you are
-  /// requesting data from server in [clusterBuilder] you may want to set this
-  /// to false.
-  /// Default value is `true`.
-  final bool buildClustersOnTrayScroll;
+  /// to true but increases frequency of calling [storyBuilder]. If you are
+  /// requesting data from server in [storyBuilder] you may want to set this
+  /// to false to avoid rate limit.
+  final bool buildStoryOnTrayScroll;
 
-  /// Sets the story view to be full screen or not. Default value is `true`.
-  /// Hides status and navigation bars when story view opened.
-  final bool hideBars;
+  /// Sets whether story preload is enabled.
+  ///
+  /// When set to true, _three_ story and some of it's content
+  /// (depends on [preloadContent]) are loaded into memory at a time.
+  ///
+  /// When set to false, only loads _one_ story and some of its contents into
+  /// memory at a time.
+  ///
+  /// If you are seeing memory issues or lags, you can set this to false.
+  /// If your content is mostly video, consider checking the media sizes as
+  /// well. Large videos can cause problems, in which case you might want to
+  /// set this to false.
+  final bool preloadStory;
+
+  /// Sets whether content preload is enabled or not.
+  ///
+  /// When set to true, loads _three_ content into memory at a time.
+  /// When set to false, only loads _one_ content into memory at a time.
+  ///
+  /// _Setting this to false significantly reduces performance._
+  ///
+  /// Default value is `true`. Most of the time you don't need to disable this.
+  /// You might want to set this to false only if your content is mostly video
+  /// and you don't have control over video sizes.
+  final bool preloadContent;
 
   @override
   State<AdvStory> createState() => _AdvStoryState();
@@ -87,136 +98,71 @@ class AdvStory extends StatefulWidget {
 
 class _AdvStoryState extends State<AdvStory> with TickerProviderStateMixin {
   late final AdvStoryControllerImpl _controller;
-  late final _buildHelper = BuildHelper(clusterBuilder: widget.clusterBuilder);
-  bool _canShowCluster = true;
+  late final _buildHelper = BuildHelper(storyBuilder: widget.storyBuilder);
+
+  /// Used to determine whether a story can be shown or not.
+  bool _canShowStory = true;
 
   /// Active progress indicator value controller.
-  late final _indicatorController = AnimationController(vsync: this);
+  late final AnimationController _indicatorController;
 
   /// Controls indicator, header and footer visibility.
-  late final _opacityController = AnimationController(
-    duration: const Duration(milliseconds: 150),
-    vsync: this,
-    value: 1.0,
-  );
+  late final AnimationController _opacityController;
+
+  /// Controls story view position.
+  late final AnimationController _posController;
 
   @override
   void initState() {
-    // Cast controller to AdvStoryControllerImpl to access required methods and
-    // provide required params.
-    _controller =
-        ((widget.controller ?? AdvStoryController()) as AdvStoryControllerImpl)
-          ..initialize(
-            indicatorController: _indicatorController,
-            opacityController: _opacityController,
-          );
-
     super.initState();
+
+    _setAnimationParams();
+    _controller =
+        (widget.controller ?? AdvStoryController()) as AdvStoryControllerImpl;
+    _controller.setAnimationControllers(
+      indicatorController: _indicatorController,
+      opacityController: _opacityController,
+    );
   }
 
   @override
   void dispose() {
     _opacityController.dispose();
     _indicatorController.dispose();
+    _posController.dispose();
 
     super.dispose();
   }
 
-  /// Makes story ready before showing, this provides a smoother transition and
-  /// prevents loading screen from showing on first view.
-  /// This function is called if story tray is a subclass of [AnimatedTray].
-  ///
-  /// Downloads and caches media file, creates [VideoPlayerController] if
-  /// story is a [VideoStory], precaches image if story is an [ImageStory].
-  Future<void> _prepareMedia(int index) async {
-    final cluster = await _buildHelper.buildCluster(index);
-    final story = cluster.storyBuilder(0);
-
-    if (story is WidgetStory || !mounted) return;
-
-    story as ManagedStory;
-
-    final file = await _buildHelper.getMediaFile(
-      url: story.url,
-      headers: story.requestHeaders,
-      key: story.cacheKey,
+  /// Sets values for animation controllers.
+  void _setAnimationParams() {
+    _opacityController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+      value: 1.0,
     );
-
-    if (!mounted) return;
-    late final StoryResource resource;
-
-    if (story is ImageStory) {
-      final image = FileImage(file);
-      await precacheImage(image, context);
-
-      resource = ImageResource(
-        isLoaded: true,
-        image: image,
-      );
-    } else {
-      final videoController = VideoPlayerController.file(file);
-      await videoController.initialize();
-      resource = VideoResource(
-        isLoaded: true,
-        videoController: videoController,
-      );
-    }
-
-    _controller.flowManager.addResource(
-      resource,
-      StoryPosition(0, index),
+    _indicatorController = AnimationController(vsync: this);
+    _posController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
     );
   }
 
-  /// Opens the [ClusterView] according to given index.
-  /// [index] is tapped tray index and so cluster index to display.
-  Future<void> _show({
-    required BuildContext context,
-    required int index,
-    AnimationManager? manager,
-  }) async {
-    if (manager != null) {
-      await _prepareMedia(index);
-      manager.notifier.notifyListeners(shouldAnimate: false);
-    }
-    _canShowCluster = true;
-
+  /// Opens story view and notifies listeners
+  void _show(DataProvider view) async {
+    _canShowStory = true;
     if (!mounted) return;
 
-    // Set cluster PageController to start from the given index.
-    _controller.clusterController = ExtendedPageController(
-      initialPage: index,
-      itemCount: widget.clusterCount,
-    );
-
-    final content = await Future.microtask(() {
-      return DataProvider(
-        clusterCount: widget.clusterCount,
-        controller: _controller,
-        buildHelper: _buildHelper,
-        style: widget.style,
-        initialPosition: StoryPosition(0, index),
-        initialPositionStarted: ValueNotifier(false),
-        hideBars: widget.hideBars,
-        child: const ClusterView(),
-      );
-    });
-
-    await showGeneralDialog(
+    showGeneralDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.transparent,
       barrierLabel: 'Stories',
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return content;
-      },
+      pageBuilder: (_, __, ___) => view,
       transitionDuration: const Duration(milliseconds: 350),
-      useRootNavigator: true,
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0, 1);
-        const end = Offset.zero;
-
         return SlideTransition(
-          position: Tween(begin: begin, end: end).animate(
+          position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(
             CurvedAnimation(
               parent: animation,
               curve: Curves.linearToEaseOut,
@@ -226,56 +172,98 @@ class _AdvStoryState extends State<AdvStory> with TickerProviderStateMixin {
         );
       },
     );
-  }
-
-  Future<void> _handleTrayTap({
-    required BuildContext context,
-    required Widget tray,
-    required int index,
-  }) async {
-    if (!_canShowCluster) return;
-    _canShowCluster = false;
-
-    if (tray is AnimationManager) {
-      tray.notifier.notifyListeners(shouldAnimate: true);
-    }
-
-    await _show(
-      context: context,
-      index: index,
-      manager: tray is AnimationManager ? tray : null,
-    );
 
     _controller.notifyListeners(
       StoryEvent.trayTap,
-      clusterIndex: index,
-      storyIndex: 0,
+      storyIndex: view.positionNotifier.story,
+      contentIndex: 0,
     );
+  }
+
+  Future<void> _handleTrayTap({
+    required Widget tray,
+    required int index,
+  }) async {
+    if (!_canShowStory) return;
+
+    _posController.reset();
+    _canShowStory = false;
+    final positionNotifier = PositionNotifier(
+      0,
+      index,
+      trayWillAnimate: tray is AnimationManager,
+    );
+    final firstContentPreperation =
+        tray is AnimationManager ? Completer<void>() : null;
+
+    final posAnim = Tween<Offset>(
+      begin: Offset(
+        0,
+        (window.physicalSize / window.devicePixelRatio).height * 1.2,
+      ),
+      end: Offset.zero,
+    ).animate(_posController);
+
+    // Set story PageController to start from the given index.
+    _controller.storyController = ExtendedPageController(
+      initialPage: index,
+      itemCount: widget.storyCount,
+    );
+    _controller.positionNotifier = positionNotifier;
+
+    _show(
+      DataProvider(
+        controller: _controller,
+        buildHelper: _buildHelper,
+        style: widget.style,
+        preloadStory: widget.preloadStory,
+        preloadContent: widget.preloadContent,
+        firstContentPreperation: firstContentPreperation,
+        child: StoryView(positionAnimation: posAnim),
+      ),
+    );
+
+    if (tray is AnimationManager) {
+      tray.update(shouldAnimate: true);
+      final story = await _buildHelper.buildStory(index);
+      final content = story.contentBuilder(0);
+
+      if (content is! SimpleCustomContent) {
+        await firstContentPreperation!.future;
+      }
+
+      tray.update(shouldAnimate: false);
+    }
+
+    if (!mounted) return;
+    if (widget.style.hideBars) {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    }
+
+    _posController.forward();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      positionNotifier.update(status: StoryStatus.play);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: widget.style.trayStyle.padding,
-      scrollDirection: widget.style.trayStyle.direction,
-      itemCount: widget.clusterCount,
+      padding: widget.style.trayListStyle.padding,
+      scrollDirection: widget.style.trayListStyle.direction,
+      itemCount: widget.storyCount,
       itemBuilder: (context, index) {
-        if (widget.buildClustersOnTrayScroll) {
-          _buildHelper.prepareCluster(index);
+        if (widget.buildStoryOnTrayScroll) {
+          _buildHelper.prepareStory(index);
         }
 
         Widget tray = widget.trayBuilder(index);
-
         if (tray is AnimatedTray) {
-          tray = AnimationManager(
-            notifier: AnimationNotifier(),
-            child: tray,
-          );
+          tray = AnimationManager(child: tray);
         }
 
         return GestureDetector(
           onTap: () => _handleTrayTap(
-            context: context,
             tray: tray,
             index: index,
           ),
@@ -283,12 +271,12 @@ class _AdvStoryState extends State<AdvStory> with TickerProviderStateMixin {
         );
       },
       separatorBuilder: (context, index) => SizedBox(
-        width: widget.style.trayStyle.direction == Axis.vertical
+        width: widget.style.trayListStyle.direction == Axis.vertical
             ? 0
-            : widget.style.trayStyle.spacing,
-        height: widget.style.trayStyle.direction == Axis.horizontal
+            : widget.style.trayListStyle.spacing,
+        height: widget.style.trayListStyle.direction == Axis.horizontal
             ? 0
-            : widget.style.trayStyle.spacing,
+            : widget.style.trayListStyle.spacing,
       ),
     );
   }
