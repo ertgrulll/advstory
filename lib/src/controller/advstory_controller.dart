@@ -92,6 +92,9 @@ abstract class AdvStoryController {
   /// story indicator.
   void hideComponents();
 
+  /// close story view.
+  void close();
+
   /// Pauses the current story, this stops the timer and the story will not
   /// skip to the next item. This method doesn't hide header, footer and
   /// indicator after pause.

@@ -368,4 +368,9 @@ class AdvStoryControllerImpl implements AdvStoryController {
       );
     }
   }
+
+  @override
+  void close() {
+    notifyListeners(StoryEvent.close);
+  }
 }
