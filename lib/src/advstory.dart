@@ -33,6 +33,7 @@ class AdvStory extends StatefulWidget {
     this.buildStoryOnTrayScroll = true,
     this.preloadStory = true,
     this.preloadContent = true,
+    this.trayScrollController,
     this.style = const AdvStoryStyle(),
     Key? key,
   }) : super(key: key);
@@ -91,6 +92,8 @@ class AdvStory extends StatefulWidget {
   /// You might want to set this to false only if your content is mostly video
   /// and you don't have control over video sizes.
   final bool preloadContent;
+
+  final ScrollController? trayScrollController;
 
   @override
   State<AdvStory> createState() => _AdvStoryState();
@@ -249,6 +252,7 @@ class _AdvStoryState extends State<AdvStory> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      controller: _controller.trayScrollController,
       padding: widget.style.trayListStyle.padding,
       scrollDirection: widget.style.trayListStyle.direction,
       itemCount: widget.storyCount,

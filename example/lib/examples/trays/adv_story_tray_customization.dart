@@ -26,7 +26,8 @@ class _AdvStoryTrayCustomizationState extends State<AdvStoryTrayCustomization> {
   double _strokeWidth = 2;
   double _gapSize = 3;
   bool _showUserNames = false;
-
+  ScrollController _scrollController = ScrollController();
+  late AdvStoryController controller;
   final _defaultBorderColors = [
     const Color(0xaf405de6),
     const Color(0xaf5851db),
@@ -39,6 +40,14 @@ class _AdvStoryTrayCustomizationState extends State<AdvStoryTrayCustomization> {
   late List<Color> _selectedColors = _defaultBorderColors;
 
   double _lerp = 0;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_scrollListener);
+    controller = AdvStoryController(scrollController: _scrollController);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +90,7 @@ class _AdvStoryTrayCustomizationState extends State<AdvStoryTrayCustomization> {
           ),
           Expanded(
             child: AdvStory(
+              controller : controller,
               storyCount: userNames.length,
               storyBuilder: (index) async {
                 return Story(
@@ -126,6 +136,13 @@ class _AdvStoryTrayCustomizationState extends State<AdvStoryTrayCustomization> {
         ],
       ),
     );
+  }
+  void _scrollListener() {
+    if (_scrollController.hasClients &&
+        _scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent) {
+      print("_scrollListener: _scrollController.position.pixels");
+    }
   }
 
   Widget _controls() {

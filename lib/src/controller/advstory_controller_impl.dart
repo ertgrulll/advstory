@@ -19,9 +19,11 @@ const String _navigationExc = "Couldn't navigate, story view is not visible.";
 /// Implementation of [AdvStoryController].
 class AdvStoryControllerImpl implements AdvStoryController {
   /// Creates an instance of [AdvStoryControllerImpl].
-  AdvStoryControllerImpl() {
+  AdvStoryControllerImpl(this.trayScrollController) {
     flowManager = FlowManager(callback: toNextContent);
   }
+
+  final ScrollController? trayScrollController;
 
   /// Position of the current story. [PositionNotifier] also contains a
   /// variable to keep story state, this variable is used to pause/resume story.

@@ -5,6 +5,7 @@ import 'package:advstory/src/contants/types.dart';
 import 'package:advstory/src/controller/advstory_controller_impl.dart';
 import 'package:advstory/src/model/story_position.dart';
 import 'package:advstory/src/view/components/contents/video_content.dart';
+import 'package:flutter/material.dart';
 
 /// A controller for [AdvStory].
 ///
@@ -15,7 +16,9 @@ abstract class AdvStoryController {
   /// Creates an AdvStoryController.
   ///
   /// Check [hasClient] before calling methods.
-  factory AdvStoryController() = AdvStoryControllerImpl;
+  factory AdvStoryController({ScrollController? scrollController}) {
+    return AdvStoryControllerImpl(scrollController);
+  }
 
   /// Returns true if a story view is currently visible. Most methods like
   /// [toNextContent], [toPreviousStory] can't be used and throws an exception
