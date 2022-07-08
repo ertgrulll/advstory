@@ -10,12 +10,15 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class BuildHelper {
   /// Provides methods for loading and caching media files from the internet.
   /// Also, provides build methods for media items.
-  BuildHelper({this.storyBuilder}) {
+  BuildHelper({this.storyBuilder, this.cacheStories = true}) {
     _storyBuildStack = <int>[].bind(_builderStackHandler);
   }
 
   /// The builder function that will be called to build a [Story].
   StoryBuilder? storyBuilder;
+
+  /// Determines if built stories should cache or not.
+  final bool cacheStories;
 
   /// Stors the built stories.
   final stories = <int, Story>{};
@@ -26,6 +29,8 @@ class BuildHelper {
   /// Pauses story builds that has not priority, builds and returns required
   /// story first.
   Future<Story> buildStory(int index) async {
+    if (!cacheStories) return storyBuilder!(index);
+
     if (!stories.containsKey(index)) {
       _hasPriorItem = true;
       await _buildStory(index);
@@ -47,9 +52,7 @@ class BuildHelper {
 
   Future<void> _builderStackHandler(List<int> indexes) async {
     for (int i = 0; i < indexes.length; i++) {
-      if (_hasPriorItem) {
-        return;
-      }
+      if (_hasPriorItem) return;
 
       final index = indexes.first;
       _storyBuildStack.value.removeAt(0);
@@ -67,7 +70,7 @@ class BuildHelper {
     required String url,
     Map<String, String>? requestHeaders,
     String? cacheKey,
-  }) async {
+  }) {
     return DefaultCacheManager().getSingleFile(
       url,
       key: cacheKey ?? url,

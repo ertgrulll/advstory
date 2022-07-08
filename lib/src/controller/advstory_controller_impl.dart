@@ -25,10 +25,13 @@ class AdvStoryControllerImpl implements AdvStoryController {
 
   /// Position of the current story. [PositionNotifier] also contains a
   /// variable to keep story state, this variable is used to pause/resume story.
-  PositionNotifier? positionNotifier;
+  final positionNotifier = PositionNotifier();
 
   /// Manages cronometer and indicators of story.
   late final FlowManager flowManager;
+
+  /// Count of the stories.
+  int? _storyCount;
 
   /// Event listeners for [AdvStoryController]
   final _listeners = ObserverList<StoryEventCallback>();
@@ -47,7 +50,7 @@ class AdvStoryControllerImpl implements AdvStoryController {
 
   /// Story pageview controller. This controller lets controller to skip next
   /// and previous story.
-  ExtendedPageController? storyController;
+  PageController? storyController;
 
   /// Active content pageview controller. This controller lets to skip next and
   /// previous content.
@@ -60,11 +63,20 @@ class AdvStoryControllerImpl implements AdvStoryController {
   /// Controls footer, header and indicator visibility in the story view.
   late AnimationController opacityController;
 
-  @override
-  bool get hasClient => storyController?.hasClients ?? false;
+  /// Sets story count, used to determine bounds.
+  set storyCount(int count) => _storyCount = count;
+
+  /// Function to call before story events except [StoryEvent.trayTap].
+  Interceptor? interceptor;
+
+  /// Function to call before [StoryEvent.trayTap] event.
+  TrayTapInterceptor? trayTapInterceptor;
 
   @override
-  int get storyCount => storyController?.itemCount ?? 0;
+  int get storyCount => _storyCount ?? 0;
+
+  @override
+  bool get hasClient => storyController?.hasClients ?? false;
 
   @override
   int get contentCount => contentController?.itemCount ?? 0;
@@ -90,6 +102,12 @@ class AdvStoryControllerImpl implements AdvStoryController {
   @override
   void toNextContent() {
     assert(hasClient, _navigationExc);
+    final interception = interceptor?.call(StoryEvent.nextContent);
+    if (interception != null) {
+      interception();
+      return;
+    }
+
     // Reached to the last content, skip to next story.
     if (contentIndex == contentCount - 1) {
       toNextStory();
@@ -98,14 +116,19 @@ class AdvStoryControllerImpl implements AdvStoryController {
 
       flowManager.reset();
       contentController!.jumpToPage(nextIndex);
-      positionNotifier!.update(content: nextIndex);
-      notifyListeners(StoryEvent.contentSkip);
+      positionNotifier.update(content: nextIndex);
+      notifyListeners(StoryEvent.nextContent);
     }
   }
 
   @override
   void toPreviousContent() {
     assert(hasClient, _navigationExc);
+    final interception = interceptor?.call(StoryEvent.previousContent);
+    if (interception != null) {
+      interception();
+      return;
+    }
 
     // Displaying first content, skip to previous story.
     if (contentIndex == 0) {
@@ -115,8 +138,8 @@ class AdvStoryControllerImpl implements AdvStoryController {
 
       flowManager.reset();
       contentController!.jumpToPage(previousIndex);
-      positionNotifier!.update(content: previousIndex);
-      notifyListeners(StoryEvent.contentSkip);
+      positionNotifier.update(content: previousIndex);
+      notifyListeners(StoryEvent.previousContent);
     }
   }
 
@@ -125,9 +148,18 @@ class AdvStoryControllerImpl implements AdvStoryController {
     assert(hasClient, "Couldn't pause, story view is not visible.");
     if (!flowManager.isRunning) return;
 
+    if (!innerCall) {
+      final interception = interceptor?.call(StoryEvent.pause);
+      if (interception != null) {
+        interception();
+        resume();
+        return;
+      }
+    }
+
     // Stop timer to prevent skipping to next media
     flowManager.pause();
-    positionNotifier!.update(status: StoryStatus.pause);
+    positionNotifier.update(status: StoryStatus.pause);
 
     if (!innerCall) {
       _isExactPause = true;
@@ -139,6 +171,12 @@ class AdvStoryControllerImpl implements AdvStoryController {
   ///
   /// Hides widgets over the [AdvStoryContent] and notifies listeners.
   void exactPause() {
+    final interception = interceptor?.call(StoryEvent.pause);
+    if (interception != null) {
+      interception();
+      resume();
+      return;
+    }
     _isExactPause = true;
 
     // This is done here instead of pause method to prevent hiding on skips
@@ -151,10 +189,15 @@ class AdvStoryControllerImpl implements AdvStoryController {
   void resume() {
     assert(hasClient, "Couldn't resume, story view is not visible.");
     if (flowManager.isRunning) return;
+    final interception = interceptor?.call(StoryEvent.resume);
+    if (interception != null) {
+      interception();
+      return;
+    }
 
     showComponents();
     flowManager.resume();
-    positionNotifier!.update(status: StoryStatus.resume);
+    positionNotifier.update(status: StoryStatus.resume);
     if (_isExactPause) notifyListeners(StoryEvent.resume);
     _isExactPause = false;
   }
@@ -182,46 +225,14 @@ class AdvStoryControllerImpl implements AdvStoryController {
   }
 
   @override
-  void jumpTo({required int story, required int content}) {
-    assert(hasClient, _navigationExc);
-    assert(
-      story >= 0 && story < storyCount,
-      "Story index out of range!",
-    );
-    assert(content >= 0, "Content index out of range!");
-    flowManager.reset();
-
-    void _listener() {
-      if (storyController!.page!.floor() == story) {
-        SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
-          await _waitContentController(story);
-
-          assert(
-            contentController!.itemCount > content,
-            "Content index out of range.",
-          );
-
-          contentController!.jumpToPage(content);
-          positionNotifier!.update(content: content, story: story);
-        });
-
-        storyController!.removeListener(_listener);
-      }
-    }
-
-    if (storyIndex == story) {
-      contentController!.jumpToPage(content);
-      positionNotifier!.update(content: content);
-    } else {
-      storyController!.addListener(_listener);
-      storyController!.jumpToPage(story);
-    }
-  }
-
-  @override
   void toNextStory() {
     assert(hasClient, _navigationExc);
-    flowManager.reset();
+    final interception = interceptor?.call(StoryEvent.nextStory);
+    if (interception != null) {
+      interception();
+      return;
+    }
+
     int ms = 500;
 
     if (storyIndex < storyCount - 1) {
@@ -229,7 +240,17 @@ class AdvStoryControllerImpl implements AdvStoryController {
       // is animating
       gesturesDisabled.value = true;
       ms = 250;
+    } else {
+      final interception = interceptor?.call(StoryEvent.close);
+
+      if (interception != null) {
+        interception();
+
+        return;
+      }
     }
+
+    flowManager.reset();
 
     storyController!.nextPage(
       duration: Duration(milliseconds: ms),
@@ -240,6 +261,12 @@ class AdvStoryControllerImpl implements AdvStoryController {
   @override
   void toPreviousStory() {
     assert(hasClient, _navigationExc);
+    final interception = interceptor?.call(StoryEvent.previousStory);
+    if (interception != null) {
+      interception();
+      return;
+    }
+
     if (storyIndex > 0) {
       flowManager.reset();
 
@@ -267,6 +294,66 @@ class AdvStoryControllerImpl implements AdvStoryController {
       requestHeaders: requestHeaders,
       cacheKey: cacheKey,
     );
+  }
+
+  @override
+  void setInterceptor(Interceptor interceptor) =>
+      this.interceptor = interceptor;
+
+  @override
+  void removeInterceptor() => interceptor = null;
+
+  @override
+  void setTrayTapInterceptor(TrayTapInterceptor interceptor) =>
+      trayTapInterceptor = interceptor;
+
+  @override
+  void removeTrayTapInterceptor() => trayTapInterceptor = null;
+
+  @override
+  Future<void> jumpTo({required int story, required int content}) async {
+    storyController?.hasClients == false
+        ? SchedulerBinding.instance.addPostFrameCallback(
+            (_) => _jump(story, content),
+          )
+        : _jump(story, content);
+  }
+
+  Future<void> _jump(int story, int content) async {
+    assert(hasClient, _navigationExc);
+    assert(
+      story >= 0 && story < storyCount,
+      "Story index out of range!",
+    );
+    assert(content >= 0, "Content index out of range!");
+    flowManager.reset();
+
+    void _listener() {
+      if (storyController!.page!.floor() == story) {
+        SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+          await _waitContentController(story);
+
+          assert(
+            contentController!.itemCount > content,
+            "Content index out of range.",
+          );
+
+          contentController!.jumpToPage(content);
+          positionNotifier.update(content: content, story: story);
+        });
+
+        storyController!.removeListener(_listener);
+      }
+    }
+
+    if (storyIndex == story) {
+      await _waitContentController(story);
+      contentController!.jumpToPage(content);
+      positionNotifier.update(content: content);
+    } else {
+      storyController!.addListener(_listener);
+      storyController!.jumpToPage(story);
+    }
   }
 
   /// Waits for the PageController of the given index to be assigned.
@@ -313,6 +400,11 @@ class AdvStoryControllerImpl implements AdvStoryController {
     _contentControllers[index] = controller;
   }
 
+  /// Returns content page view controller by index.
+  ExtendedPageController? getContentController(int index) {
+    return _contentControllers[index];
+  }
+
   /// Removes content PageViewController to controllers.
   void cleanContentController(int index) {
     _contentControllers.remove(index)?.dispose();
@@ -332,13 +424,18 @@ class AdvStoryControllerImpl implements AdvStoryController {
       gesturesDisabled.value = false;
     }
 
-    positionNotifier!.update(content: contentIndex, story: storyIndex);
-    notifyListeners(StoryEvent.storySkip);
+    final event = positionNotifier.content < contentIndex
+        ? StoryEvent.nextStory
+        : StoryEvent.previousStory;
+
+    positionNotifier.update(content: contentIndex, story: storyIndex);
+    notifyListeners(event);
   }
 
   /// Resets values of controller, values are only available to current view.
   void _reset() {
     flowManager.reset();
+    positionNotifier.reset();
     _isExactPause = false;
     _isGesturesDisabledManually = false;
     gesturesDisabled.value = false;

@@ -19,8 +19,8 @@ import 'package:flutter/material.dart';
 const _excMessage = 'AdvStory fields didn\'t set yet, '
     'use any AdvStory method after super.didChangeDependencies().';
 
-/// Base class for story contents. Every story content types must extend
-/// this class.
+/// Base class for story contents. Every story content type must be a subtype
+/// of this class.
 abstract class AdvStoryContent extends Widget {
   /// Constructor of [AdvStoryContent].
   const AdvStoryContent({Key? key}) : super(key: key);
@@ -68,14 +68,13 @@ abstract class StoryContentState<T extends StoryContent> extends State<T> {
   /// Returns true if this content is the first item in the tapped tray.
   ///
   /// This is different from 0th position.
-  /// For example, when user tapped on the second tray item, if this contents
+  /// For example, when user tapped on the second tray, if this contents
   /// position is (2,0) this method will return true, but if this contents
   /// position is (3,0) this method will return false.
   bool get isFirstContent {
     assert(_dataProvider != null, _excMessage);
 
-    return _dataProvider!.positionNotifier.initialContentPosition ==
-            position.content &&
+    return _dataProvider!.positionNotifier.initialPosition == position &&
         _dataProvider!.positionNotifier.story == position.story;
   }
 

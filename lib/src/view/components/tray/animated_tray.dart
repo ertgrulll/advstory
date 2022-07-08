@@ -1,5 +1,5 @@
 import 'package:advstory/advstory.dart';
-import 'package:advstory/src/view/components/tray/animation_manager.dart';
+import 'package:advstory/src/view/components/tray/tray_animation_manager.dart';
 import 'package:flutter/material.dart';
 
 /// Base class for animated story trays, animated trays must extend this
@@ -23,7 +23,7 @@ abstract class AnimatedTray extends StatefulWidget {
 /// State class for AnimatedTray. This class provides way to controlling custom
 /// animations.
 abstract class AnimatedTrayState<T extends AnimatedTray> extends State<T> {
-  AnimationManager? _manager;
+  TrayAnimationManager? _manager;
 
   /// Start your animation inside of this method.
   ///
@@ -45,7 +45,7 @@ abstract class AnimatedTrayState<T extends AnimatedTray> extends State<T> {
   @mustCallSuper
   void didChangeDependencies() {
     if (_manager == null) {
-      _manager = AnimationManager.of(context);
+      _manager = TrayAnimationManager.of(context);
       _manager!.addListener(_animationListener);
     }
 

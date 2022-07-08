@@ -12,7 +12,7 @@
 
 ## 0.1.0
 
-***This version has breaking changes.***
+**This version has breaking changes.**
 - All `*story` has been renamed `*content` and all `*cluster` has been renamed `*story`:
     - `Cluster` as `Story`
     - `clusterBuilder` as `storyBuilder`
@@ -35,3 +35,27 @@
 - Default loading screen has changed. Shimmer effect was causing a lag.
 - Fixed a bug that caused the story to not start when the first content was custom content.
 - Improved documentation and example project.
+
+# 0.2.0
+
+**This version has breaking changes**
+
+***Breaking changes***
+- `StoryEvent.contentSkip` replaced with `StoryEvent.nextContent` and 
+`StoryEvent.previousContent`.
+- `StoryEvent.storySkip` replaced with `StoryEvent.nextStory` and `StoryEvent.previousStory`.
+- `IndicatorStyle`'s `padding` parameter type changed from `double` to `EdgeInsets`.
+
+***New Features***
+- Added interceptor support, you can now capture and block events and call custom callbacks before they happen.
+- Decoupled tray list and player, [#3](https://github.com/ertgrulll/advstory/issues/3). `AdvStory.player` constructor allows to creating story view without tray list. Also this constructor doesn't force to full screen story view. Story view expands itself to fit it's parent. Story size, shape, position, opening animation and more can be adjusted. 
+- Created `AdvStoryPlayerController` for `AdvStory.player`. This controller provides additional methods to open and close story view.
+
+***Bug fixes***
+- `AdvStoryController`'s `jumpTo` method exception fixed. See [#15](https://github.com/ertgrulll/advstory/issues/15) for more information.
+- Story view close on +Y drag fixed.
+- Content skip on continuous taps fixed.
+
+***Enhancements***
+- Allowed to changing `storyCount` by setting state to make story pagination possible, [#14](https://github.com/ertgrulll/advstory/issues/14).
+- Removed unnecessary `AnimatedBuilder`s.

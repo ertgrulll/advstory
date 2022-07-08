@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:advstory/src/contants/enums.dart';
 import 'package:advstory/src/model/story.dart';
 import 'package:advstory/src/model/story_position.dart';
 import 'package:advstory/src/util/extended_page_controller.dart';
@@ -33,16 +34,26 @@ class ContentView extends StatefulWidget {
 
 /// State for [ContentView].
 class ContentViewState extends State<ContentView> {
+  final _key = GlobalKey<ScaffoldState>();
+  ExtendedPageController? _pageController;
+  DataProvider? _provider;
+
   /// Returns width without using [MediaQuery].
   double get width => (window.physicalSize / window.devicePixelRatio).width;
-  late final _pageController =
-      ExtendedPageController(itemCount: widget.story.contentCount);
-  DataProvider? _provider;
 
   @override
   void didChangeDependencies() {
-    _provider ??= DataProvider.of(context)!
-      ..controller.setContentController(_pageController, widget.storyIndex);
+    _provider ??= DataProvider.of(context)!;
+    final initialPage =
+        _provider!.positionNotifier.initialPosition.story == widget.storyIndex
+            ? _provider!.positionNotifier.content
+            : 0;
+    _pageController ??= ExtendedPageController(
+      itemCount: widget.story.contentCount,
+      initialPage: initialPage,
+    );
+    _provider!.controller
+        .setContentController(_pageController!, widget.storyIndex);
 
     super.didChangeDependencies();
   }
@@ -59,11 +70,12 @@ class ContentViewState extends State<ContentView> {
   /// Skips to the previous content if touched position is in the left 23
   /// percent of screen.
   void _handleTapUp(TapUpDetails event) {
-    final x = event.globalPosition.dx;
+    final viewWidth = _key.currentContext?.size?.width ?? width;
+    final x = event.localPosition.dx;
 
-    if (x > width * .77) {
+    if (x > viewWidth * .77) {
       _provider!.controller.toNextContent();
-    } else if (x < width * .23) {
+    } else if (x < viewWidth * .23) {
       _provider!.controller.toPreviousContent();
     } else {
       _provider!.controller.resume();
@@ -116,9 +128,29 @@ class ContentViewState extends State<ContentView> {
     ];
   }
 
+  void _handleVerticalDrag(DragEndDetails details) {
+    if (details.primaryVelocity! < 0) {
+      _provider!.controller.resume();
+      return;
+    }
+
+    final interception = _provider!.controller.interceptor?.call(
+      StoryEvent.close,
+    );
+
+    if (interception != null) {
+      interception();
+    } else {
+      !_provider!.hasTrays
+          ? _provider!.controller.positionNotifier.shouldShowView.value = false
+          : Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _key,
       resizeToAvoidBottomInset: false,
       body: GestureDetector(
         onLongPressDown: _handleDownPress,
@@ -126,58 +158,47 @@ class ContentViewState extends State<ContentView> {
         onLongPressUp: _provider!.controller.resume,
         onLongPress: _provider!.controller.exactPause,
         onTapUp: _handleTapUp,
-        onVerticalDragEnd: (_) => Navigator.of(context).pop(),
-        child: SafeArea(
-          top: !_provider!.style.hideBars,
-          bottom: !_provider!.style.hideBars,
-          child: PageView.builder(
-            allowImplicitScrolling: _provider!.preloadContent,
-            controller: _pageController,
-            itemCount: widget.story.contentCount,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              final content = widget.story.contentBuilder(index);
+        onVerticalDragEnd: _handleVerticalDrag,
+        child: PageView.builder(
+          allowImplicitScrolling: _provider!.preloadContent,
+          controller: _pageController,
+          itemCount: widget.story.contentCount,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            final content = widget.story.contentBuilder(index);
 
-              return Stack(
-                children: [
-                  PositionProvider(
-                    position: StoryPosition(index, widget.storyIndex),
-                    child: content,
-                  ),
-                  Scaffold(
-                    backgroundColor: Colors.transparent,
-                    body: SafeArea(
-                      child: AnimatedBuilder(
-                        animation: _provider!.controller.opacityController,
-                        builder: (context, child) {
-                          return FadeTransition(
-                            opacity: _provider!.controller.opacityController,
-                            child: child,
-                          );
-                        },
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Positioned(
-                              top: 0,
-                              child: StoryIndicator(
-                                activeIndicatorIndex: index,
-                                count: widget.story.contentCount,
-                                controller: _provider!
-                                    .controller.flowManager.indicatorController,
-                                style: _provider!.style.indicatorStyle,
-                              ),
-                            ),
-                            ..._getComponents(content),
-                          ],
-                        ),
+            return Stack(
+              children: [
+                PositionProvider(
+                  position: StoryPosition(index, widget.storyIndex),
+                  child: content,
+                ),
+                Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: SafeArea(
+                    top: _provider!.hasTrays,
+                    bottom: _provider!.hasTrays,
+                    child: FadeTransition(
+                      opacity: _provider!.controller.opacityController,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          StoryIndicator(
+                            activeIndicatorIndex: index,
+                            count: widget.story.contentCount,
+                            controller: _provider!
+                                .controller.flowManager.indicatorController,
+                            style: _provider!.style.indicatorStyle,
+                          ),
+                          ..._getComponents(content),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

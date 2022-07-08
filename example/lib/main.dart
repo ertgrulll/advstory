@@ -1,4 +1,5 @@
 import 'package:example/examples/controller_usage.dart';
+import 'package:example/examples/player.dart';
 import 'package:example/tabs/footer_header_showcase.dart';
 import 'package:example/tabs/story_type_showcase.dart';
 import 'package:example/tabs/tray_showcase.dart';
@@ -37,12 +38,13 @@ class _AdvStoryDemoState extends State<AdvStoryDemo> {
     StoryTypeShowcase(),
     FooterHeaderShowcase(),
     ControllerUsage(),
+    Player(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: items[_selectedIndex]),
+      body: items[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
@@ -60,6 +62,10 @@ class _AdvStoryDemoState extends State<AdvStoryDemo> {
           BottomNavigationBarItem(
             label: "Controller",
             icon: Icon(Icons.signpost_outlined),
+          ),
+          BottomNavigationBarItem(
+            label: "Player",
+            icon: Icon(Icons.play_circle_rounded),
           ),
         ],
         currentIndex: _selectedIndex,

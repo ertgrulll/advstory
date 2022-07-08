@@ -17,8 +17,12 @@ class DataProvider extends InheritedWidget {
     required this.buildHelper,
     required this.preloadContent,
     required this.preloadStory,
+    this.hasTrays = true,
     this.firstContentPreperation,
   }) : super(key: key, child: child);
+
+  /// Used to determine if AdvStory widget created for only player or not.
+  final bool hasTrays;
 
   /// Story view uses this variable to setting allowImplicitScrolling.
   final bool preloadStory;
@@ -53,7 +57,7 @@ class DataProvider extends InheritedWidget {
   /// determine if it should start or not.
   ///
   /// When [DataProvider] created, controller always has [PositionNotifier].
-  PositionNotifier get positionNotifier => controller.positionNotifier!;
+  PositionNotifier get positionNotifier => controller.positionNotifier;
 
   /// Returns the [DataProvider] from the [BuildContext].
   static DataProvider? of(BuildContext context) {

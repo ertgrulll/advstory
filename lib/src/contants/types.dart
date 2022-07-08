@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:advstory/src/model/models.dart';
-import 'package:advstory/src/view/components/async_page_view.dart';
 import 'package:advstory/src/view/components/contents/contents_base.dart';
 import 'package:advstory/src/view/components/tray/animated_tray.dart';
 import 'package:flutter/material.dart';
@@ -42,8 +41,8 @@ typedef StoryEventCallback = FutureOr<void> Function(
   StoryPosition position,
 );
 
-/// Widget builder function definition for [AsyncPageView].
-typedef AsyncIndexedWidgetBuilder = Future<Widget> Function(
-  BuildContext context,
-  int index,
-);
+/// Story event interceptor definition.
+typedef Interceptor = FutureOr<void> Function()? Function(StoryEvent);
+
+/// Tray tap event interceptor definition.
+typedef TrayTapInterceptor = StoryPosition? Function(int trayIndex);

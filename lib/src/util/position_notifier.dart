@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:advstory/advstory.dart';
 import 'package:flutter/material.dart';
 import 'package:advstory/src/contants/enums.dart';
@@ -8,27 +10,20 @@ import 'package:advstory/src/contants/enums.dart';
 ///
 /// [AdvStoryController] updates position and status to notify contents.
 class PositionNotifier extends ChangeNotifier implements StoryPosition {
-  /// Creates a new story position.
-  factory PositionNotifier(int content, int story, {bool? trayWillAnimate}) =>
-      PositionNotifier._(content, story, trayWillAnimate ?? false);
-
-  PositionNotifier._(this._content, this._story, this.trayWillAnimate)
-      : initialContentPosition = _content,
-        initialStoryPosition = _story;
-
-  /// Story view opening story position.
-  final int initialStoryPosition;
-
-  /// Story view opening content position.
-  final int initialContentPosition;
+  /// Story view opening position.
+  StoryPosition initialPosition = StoryPosition(0, 0);
 
   /// Whether the tray will animate when story view is opened. This is set by
   /// [AdvStory] and first content uses it to determine whether it should show
   /// loading screen or not.
-  final bool trayWillAnimate;
+  bool trayWillAnimate = false;
 
-  int _content;
-  int _story;
+  /// When [AdvStory.player] called, [AdvStory] widget listens this
+  /// variable to show story view.
+  final shouldShowView = ValueNotifier(false);
+
+  int _content = 0;
+  int _story = 0;
 
   /// Status of the content in the postion.
   StoryStatus status = StoryStatus.stop;
@@ -57,11 +52,17 @@ class PositionNotifier extends ChangeNotifier implements StoryPosition {
     if (isChanged) notifyListeners();
   }
 
+  /// Resets parameters.
+  void reset() {
+    _story = 0;
+    _content = 0;
+    status = StoryStatus.stop;
+  }
+
   @override
   void addListener(void Function() listener, {StoryPosition? position}) {
-    if (position == this) {
-      listener();
-    }
+    if (position == this) Timer.run(listener);
+
     super.addListener(listener);
   }
 

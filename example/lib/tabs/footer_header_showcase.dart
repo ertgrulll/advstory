@@ -38,7 +38,7 @@ class FooterHeaderShowcase extends StatelessWidget {
                   Expanded(
                     child: Text(
                       "This view shows specific footer and header for every two"
-                      "content. Other contents use story header and footer.",
+                      " content. Other contents use story header and footer.",
                       style: TextStyle(color: Colors.black87),
                     ),
                   ),

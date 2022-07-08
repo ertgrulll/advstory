@@ -1,17 +1,15 @@
-import 'dart:ui';
-
 import 'package:advstory/src/model/style/indicator_style.dart';
 import 'package:advstory/src/view/content_view.dart';
 import 'package:flutter/material.dart';
 
 /// Indicator view for the [ContentView]
-class StoryIndicator extends StatefulWidget {
+class StoryIndicator extends StatelessWidget {
   /// Creates indicators for the every content in the story.
   ///
   /// Indicators before [activeIndicatorIndex] will be filled with
   /// [IndicatorStyle]' valueColor and the rest will be filled with
   /// with  backgroundColor.
-  const StoryIndicator({
+  StoryIndicator({
     required this.count,
     required this.activeIndicatorIndex,
     required this.controller,
@@ -32,97 +30,69 @@ class StoryIndicator extends StatefulWidget {
   /// Style of the indicators.
   final IndicatorStyle style;
 
-  @override
-  State<StoryIndicator> createState() => _StoryIndicatorState();
-}
-
-class _StoryIndicatorState extends State<StoryIndicator> {
-  /// Story progress indicator controller.
-  late Animation<double> _animation;
-
   /// Indicators to show.
   final List<Widget> _indicators = [];
 
-  /// Returns screen width. Used to avoid [MediaQuery], this causes rebuilds
-  /// when keyboard is shown/hidden.
-  double get width => (window.physicalSize / window.devicePixelRatio).width;
-
   void _generateIndicators() {
+    final animation = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
     if (_indicators.isNotEmpty) return;
 
-    final indicatorWidth = (width -
-            (widget.count * widget.style.spacing + widget.style.padding * 2)) /
-        widget.count;
-
-    final indicators = List.generate(
-      widget.count,
+    final indicators = List<Widget>.generate(
+      count,
       (index) {
-        if (index != widget.activeIndicatorIndex) {
-          final isBefore = index < widget.activeIndicatorIndex;
-          return SizedBox(
-            width: indicatorWidth,
-            height: widget.style.height,
+        if (index != activeIndicatorIndex) {
+          final isBefore = index < activeIndicatorIndex;
+          return Expanded(
             child: LinearProgressIndicator(
-              backgroundColor: widget.style.backgroundColor,
+              backgroundColor: style.backgroundColor,
               valueColor: AlwaysStoppedAnimation<Color>(
-                isBefore
-                    ? widget.style.valueColor
-                    : widget.style.backgroundColor,
+                isBefore ? style.valueColor : style.backgroundColor,
               ),
               value: isBefore ? 1 : 0,
-              minHeight: widget.style.height,
+              minHeight: style.height,
             ),
           );
         } else {
-          return AnimatedBuilder(
-            animation: _animation,
-            builder: (context, child) {
-              return SizedBox(
-                width: indicatorWidth,
-                height: widget.style.height,
-                child: LinearProgressIndicator(
-                  backgroundColor: widget.style.backgroundColor,
+          return Expanded(
+            child: AnimatedBuilder(
+              animation: animation,
+              builder: (context, child) {
+                return LinearProgressIndicator(
+                  backgroundColor: style.backgroundColor,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    widget.style.valueColor,
+                    style.valueColor,
                   ),
-                  value: _animation.value,
-                  minHeight: widget.style.height,
-                ),
-              );
-            },
+                  value: animation.value,
+                  minHeight: style.height,
+                );
+              },
+            ),
           );
         }
       },
     );
 
+    for (int i = 1; i < indicators.length; i++) {
+      if (i % 2 != 0) {
+        indicators.insert(i, SizedBox(width: style.spacing));
+      }
+    }
+
     _indicators.addAll(indicators);
   }
 
   @override
-  void initState() {
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(widget.controller);
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    _generateIndicators();
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: widget.style.height + 16,
+    _generateIndicators();
+
+    return Align(
+      alignment: Alignment.topCenter,
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: widget.style.padding,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: _indicators,
+        padding: style.padding,
+        child: SizedBox(
+          width: double.maxFinite,
+          height: style.height,
+          child: Row(children: _indicators),
         ),
       ),
     );

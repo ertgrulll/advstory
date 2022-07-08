@@ -5,7 +5,7 @@ import 'package:advstory/src/model/style/tray_list_style.dart';
 import 'package:advstory/src/view/components/loading_indicator.dart';
 import 'package:flutter/material.dart';
 
-/// Styles for the [AdvStory].
+/// {@macro advstory.style}
 class AdvStoryStyle {
   /// Creates styles to use in the [AdvStory].
   const AdvStoryStyle({

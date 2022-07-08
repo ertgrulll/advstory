@@ -34,6 +34,7 @@ class Cron {
     _stopWatch.stop();
 
     _duration = _duration! - _stopWatch.elapsed;
+    _stopWatch.reset();
   }
 
   /// Resumes current timer from last position.

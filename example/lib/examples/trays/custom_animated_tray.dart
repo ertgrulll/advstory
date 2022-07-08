@@ -65,14 +65,8 @@ class CustomAnimatedTrayState extends AnimatedTrayState<CustomAnimatedTray>
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return ScaleTransition(
-            scale: _controller,
-            child: child,
-          );
-        },
+      child: ScaleTransition(
+        scale: _controller,
         child: SizedBox(
           width: 85,
           height: 85,

@@ -1,16 +1,13 @@
 import 'dart:io';
 
 import 'package:advstory/src/advstory.dart';
+import 'package:advstory/src/contants/enums.dart';
 import 'package:advstory/src/contants/types.dart';
 import 'package:advstory/src/controller/advstory_controller_impl.dart';
 import 'package:advstory/src/model/story_position.dart';
 import 'package:advstory/src/view/components/contents/video_content.dart';
 
-/// A controller for [AdvStory].
-///
-/// This controller lets you to skip, pause, resume contents and stories,
-/// show and hide widgets on story contents, enable or disable gestures,
-/// and more.
+/// {@macro advstory.storyController}
 abstract class AdvStoryController {
   /// Creates an AdvStoryController.
   ///
@@ -177,4 +174,59 @@ abstract class AdvStoryController {
     String? cacheKey,
     Map<String, String>? requestHeaders,
   });
+
+  /// Registers a function to intercept and replace default story event
+  /// actions except [StoryEvent.trayTap].
+  ///
+  /// See [setTrayTapInterceptor] for [StoryEvent.trayTap] event.
+  ///
+  /// AdvStory calls interceptor function before story events and uses result
+  /// instead of default action.
+  /// Return null to allow default event action.
+  ///
+  /// For example, you can use an interceptor to prevent content skipping and
+  /// jump to another content based on story position.
+  ///
+  /// ```dart
+  /// final _controller = AdvStoryController();
+  /// _controller.setInterceptor((event) {
+  ///   if(event == StoryEvent.nextContent) {
+  ///     return () => print('StoryEvent.nextContent blocked.');
+  ///   }
+  ///
+  ///   return null;
+  /// });
+  ///
+  /// ```
+  ///
+  /// See also:
+  ///
+  /// [removeInterceptor] to remove registered interceptor.
+  void setInterceptor(Interceptor interceptor);
+
+  /// Clears previously registered interceptor.
+  ///
+  /// See also:
+  ///
+  /// [setInterceptor] to register an interceptor.
+  void removeInterceptor();
+
+  /// Registers a function to intercept and replace default tray tap event
+  /// action.
+  ///
+  /// When a tray tapped, AdvStory calls this method before open story view,
+  /// return a story position to change opening position or return null to
+  /// open at content 0 of the tapped tray.
+  ///
+  /// See also:
+  ///
+  /// [removeTrayTapInterceptor]
+  void setTrayTapInterceptor(TrayTapInterceptor interceptor);
+
+  /// Clears previously registered tray tap interceptor.
+  ///
+  /// See also:
+  ///
+  /// [setTrayTapInterceptor] to register an interceptor.
+  void removeTrayTapInterceptor();
 }

@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 ///
 /// Wraps classes that extends [AnimatedTray] and provides animnation start and
 /// stop functionality.
-class AnimationManager extends InheritedWidget {
+class TrayAnimationManager extends InheritedWidget {
   /// Creates animation manager.
-  AnimationManager({
+  TrayAnimationManager({
     required Widget child,
     Key? key,
   }) : super(child: child, key: key);
@@ -45,7 +45,7 @@ class AnimationManager extends InheritedWidget {
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => false;
 
-  static AnimationManager? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<AnimationManager>();
+  static TrayAnimationManager? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<TrayAnimationManager>();
   }
 }

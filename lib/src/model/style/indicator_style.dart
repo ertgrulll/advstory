@@ -6,7 +6,7 @@ class IndicatorStyle {
   const IndicatorStyle({
     this.height = 2.5,
     this.spacing = 3.0,
-    this.padding = 4.0,
+    this.padding = const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
     this.backgroundColor = const Color(0xe6bdbdbd),
     this.valueColor = const Color(0xffffffff),
   });
@@ -19,7 +19,7 @@ class IndicatorStyle {
 
   /// Space between starting of indicators and the left of the screen and
   /// right of the screen. This value represents just one side space.
-  final double padding;
+  final EdgeInsets padding;
 
   ///Color of active and filled indicators. Default value is _[Colors.white]_.
   final Color valueColor;

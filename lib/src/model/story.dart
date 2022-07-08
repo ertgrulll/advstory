@@ -3,10 +3,11 @@ import 'package:advstory/src/view/components/contents/contents_base.dart';
 import 'package:advstory/src/view/default_components/story_header.dart';
 import 'package:flutter/material.dart';
 
-/// Group of image, media or custom story contents. A story may include one
+/// {@template advstory.story}
+/// Group of image, video or custom story contents. A story may include one
 /// or more contents.
 ///
-/// This class keeps the default header and footer of a story and a generator
+/// Story class keeps the default header and footer of a story and a generator
 /// function to creating it's contents. [contentBuilder] function called when
 /// story contents skipped by tapping left/right sides of the screen.
 ///
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 ///
 /// [contentCount] - 1 is the largest number passed as parameter to the
 /// [contentBuilder] function.
+/// {@endtemplate}
 class Story {
   /// Creates a new story.
   Story({

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:advstory/src/controller/advstory_controller_impl.dart';
 import 'package:advstory/src/model/story_position.dart';
 import 'package:advstory/src/util/cron.dart';
@@ -25,7 +27,7 @@ class FlowManager {
 
   /// Starts story skip flow and sets indicators.
   Future<void> start(StoryPosition position, Duration duration) async {
-    reset();
+    if (_cron.isRunning) reset();
 
     lastPosition = position;
     _setIndicator(duration);
@@ -43,8 +45,10 @@ class FlowManager {
 
   /// Resumes cron and active indicator.
   void resume() {
-    _cron.resume();
-    indicatorController.forward();
+    if (indicatorController.duration != null) {
+      _cron.resume();
+      indicatorController.forward();
+    }
   }
 
   /// Resets cron and indicator animation. Also stops and resets progress of

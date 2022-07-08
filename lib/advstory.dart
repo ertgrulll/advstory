@@ -1,8 +1,11 @@
-/// AdvStory is a complete story viewer for Flutter.
+/// An advanced, complete story viewer. Has support for images, videos,
+/// custom widget contents, gestures, interceptors, listeners,
+/// manipulators and much more.
 library advstory;
 
 export 'src/advstory.dart';
 export 'src/controller/advstory_controller.dart';
+export 'src/controller/advstory_player_controller.dart';
 export 'src/model/models.dart';
 export 'src/view/components/tray/animated_tray.dart';
 export 'src/view/default_components/adv_story_tray.dart';

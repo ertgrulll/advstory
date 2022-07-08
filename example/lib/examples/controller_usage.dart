@@ -1,3 +1,4 @@
+import 'package:example/examples/interceptor.dart';
 import 'package:example/mock_story_data.dart';
 import 'package:flutter/material.dart';
 import 'package:advstory/advstory.dart';
@@ -122,7 +123,7 @@ class _ControllerUsageState extends State<ControllerUsage> {
 
     return GridView.count(
       crossAxisCount: 2,
-      childAspectRatio: 4,
+      childAspectRatio: 6,
       children: [
         _desc(Icons.undo, "To previous story"),
         _desc(Icons.redo, "To next story"),
@@ -148,78 +149,74 @@ class _ControllerUsageState extends State<ControllerUsage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Row(
-                children: const [
-                  Icon(Icons.info, color: Colors.blue),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      "This page shows how to use controller.",
-                      style: TextStyle(
-                        color: Colors.black87,
-                      ),
-                    ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: Text(
+                  'Controller Usage Example',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 90,
-              child: AdvStory(
-                key: _key,
-                controller: _controller,
-                storyCount: userNames.length,
-                storyBuilder: (index) => Story(
-                  footer: _buildActionFooter(),
-                  contentCount: 3,
-                  contentBuilder: (contentIndex) {
-                    return SimpleCustomContent(
-                      useStoryFooter: true,
-                      builder: (context) {
-                        return Container(
-                          color: Colors.deepOrangeAccent,
-                          child: Center(
-                            child: Text(
-                              "Content $contentIndex",
-                              style: const TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 80,
+                child: AdvStory(
+                  key: _key,
+                  controller: _controller,
+                  storyCount: userNames.length,
+                  storyBuilder: (index) => Story(
+                    footer: _buildActionFooter(),
+                    contentCount: 3,
+                    contentBuilder: (contentIndex) {
+                      return SimpleCustomContent(
+                        useStoryFooter: true,
+                        builder: (context) {
+                          return Container(
+                            color: Colors.deepOrangeAccent,
+                            child: Center(
+                              child: Text(
+                                "Content $contentIndex",
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-                trayBuilder: (index) => AdvStoryTray(
-                  url: profilePics[index],
-                ),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(left: 8, top: 15),
-              child: Text(
-                "Icon Descriptions:",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  trayBuilder: (index) => AdvStoryTray(
+                    url: profilePics[index],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(child: _buildDescriptions()),
-          ],
+              const Padding(
+                padding: EdgeInsets.only(left: 8, top: 15),
+                child: Text(
+                  "Icon Descriptions:",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(child: _buildDescriptions()),
+              const Expanded(child: Interceptor()),
+            ],
+          ),
         ),
       ),
     );
