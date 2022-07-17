@@ -8,7 +8,7 @@
 
 ___
 
-🚀 Advanced Story viewer for Flutter. Supports image, video and custom story contents. Full control over stories for developer and smooth experience for users.
+🚀 Advanced Story viewer for Flutter. Create and customize slideshow presentations similar to Instagram, TikTok and Snapchat stories. Supports image, video and custom story contents. Full control over stories for developer and smooth experience for users.
 
 ## _Features_
 
