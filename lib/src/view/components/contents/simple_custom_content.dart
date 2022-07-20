@@ -2,7 +2,7 @@ import 'package:advstory/src/advstory.dart';
 import 'package:advstory/src/view/components/contents/contents_base.dart';
 import 'package:advstory/src/view/inherited_widgets/data_provider.dart';
 import 'package:advstory/src/contants/enums.dart';
-import 'package:advstory/src/view/inherited_widgets/position_provider.dart';
+import 'package:advstory/src/view/inherited_widgets/content_position_provider.dart';
 import 'package:flutter/material.dart';
 
 /// Type for contents using sources that can be loaded synchronously.
@@ -40,7 +40,7 @@ class SimpleCustomContent extends StatefulWidget implements AdvStoryContent {
 /// State class for [SimpleCustomContent].
 class _SimpleCustomContentState extends State<SimpleCustomContent> {
   DataProvider? _dataProvider;
-  PositionProvider? _positionProvider;
+  ContentPositionProvider? _positionProvider;
   StoryStatus _status = StoryStatus.stop;
 
   Future<void> _starter() async {
@@ -59,7 +59,7 @@ class _SimpleCustomContentState extends State<SimpleCustomContent> {
   void didChangeDependencies() {
     if (_dataProvider == null) {
       _dataProvider = DataProvider.of(context)!;
-      _positionProvider = PositionProvider.of(context)!;
+      _positionProvider = ContentPositionProvider.of(context)!;
 
       _dataProvider!.positionNotifier
           .addListener(_starter, position: _positionProvider!.position);

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:advstory/advstory.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:advstory/src/contants/enums.dart';
 
 /// This class provides information about story view position, story status and
@@ -9,7 +9,8 @@ import 'package:advstory/src/contants/enums.dart';
 /// state.
 ///
 /// [AdvStoryController] updates position and status to notify contents.
-class PositionNotifier extends ChangeNotifier implements StoryPosition {
+class PositionNotifier extends ChangeNotifier
+    implements StoryPosition, ValueListenable {
   /// Story view opening position.
   StoryPosition initialPosition = StoryPosition(0, 0);
 
@@ -83,4 +84,7 @@ class PositionNotifier extends ChangeNotifier implements StoryPosition {
 
   @override
   String toString() => 'StoryPosition(content: $content, story: $story)';
+
+  @override
+  int get value => _story;
 }

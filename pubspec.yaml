@@ -1,6 +1,6 @@
 name: advstory
 description: An advanced, complete story viewer. Has support for images, videos, custom widget contents, gestures, interceptors, listeners, manipulators and much more.
-version: 0.2.0
+version: 0.2.1
 homepage: https://advstory.sourcekod.com
 repository: https://github.com/ertgrulll/advstory
 issue_tracker: https://github.com/ertgrulll/advstory/issues

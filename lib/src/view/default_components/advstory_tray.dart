@@ -129,7 +129,7 @@ class _AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
 
   @override
   void stopAnimation() {
-    _rotationController.stop();
+    _rotationController.reset();
 
     setState(() {
       _gradientColors = widget.borderGradientColors;

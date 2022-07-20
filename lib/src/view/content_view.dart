@@ -8,7 +8,7 @@ import 'package:advstory/src/view/components/contents/contents_base.dart';
 import 'package:advstory/src/view/components/contents/simple_custom_content.dart';
 import 'package:advstory/src/view/components/story_indicator.dart';
 import 'package:advstory/src/view/inherited_widgets/data_provider.dart';
-import 'package:advstory/src/view/inherited_widgets/position_provider.dart';
+import 'package:advstory/src/view/inherited_widgets/content_position_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -152,54 +152,67 @@ class ContentViewState extends State<ContentView> {
     return Scaffold(
       key: _key,
       resizeToAvoidBottomInset: false,
-      body: GestureDetector(
-        onLongPressDown: _handleDownPress,
-        onLongPressCancel: _provider!.controller.resume,
-        onLongPressUp: _provider!.controller.resume,
-        onLongPress: _provider!.controller.exactPause,
-        onTapUp: _handleTapUp,
-        onVerticalDragEnd: _handleVerticalDrag,
-        child: PageView.builder(
-          allowImplicitScrolling: _provider!.preloadContent,
-          controller: _pageController,
-          itemCount: widget.story.contentCount,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            final content = widget.story.contentBuilder(index);
+      body: Stack(
+        children: [
+          GestureDetector(
+            onLongPressDown: _handleDownPress,
+            onLongPressCancel: _provider!.controller.resume,
+            onLongPressUp: _provider!.controller.resume,
+            onLongPress: _provider!.controller.exactPause,
+            onTapUp: _handleTapUp,
+            onVerticalDragEnd: _handleVerticalDrag,
+            child: PageView.builder(
+              allowImplicitScrolling: _provider!.preloadContent,
+              controller: _pageController,
+              itemCount: widget.story.contentCount,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final content = widget.story.contentBuilder(index);
 
-            return Stack(
-              children: [
-                PositionProvider(
-                  position: StoryPosition(index, widget.storyIndex),
-                  child: content,
-                ),
-                Scaffold(
-                  backgroundColor: Colors.transparent,
-                  body: SafeArea(
-                    top: _provider!.hasTrays,
-                    bottom: _provider!.hasTrays,
-                    child: FadeTransition(
-                      opacity: _provider!.controller.opacityController,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          StoryIndicator(
-                            activeIndicatorIndex: index,
-                            count: widget.story.contentCount,
-                            controller: _provider!
-                                .controller.flowManager.indicatorController,
-                            style: _provider!.style.indicatorStyle,
+                return Stack(
+                  children: [
+                    ContentPositionProvider(
+                      position: StoryPosition(index, widget.storyIndex),
+                      child: content,
+                    ),
+                    Scaffold(
+                      backgroundColor: Colors.transparent,
+                      body: SafeArea(
+                        top: _provider!.hasTrays,
+                        bottom: _provider!.hasTrays,
+                        child: FadeTransition(
+                          opacity: _provider!.controller.opacityController,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: _getComponents(content),
                           ),
-                          ..._getComponents(content),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                  ],
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: _provider!.positionNotifier,
+            builder: (context, value, child) {
+              return value == widget.storyIndex
+                  ? StoryIndicator(
+                      activeIndicatorIndex: _pageController!.page?.toInt() ??
+                          _pageController!.initialPage.toInt(),
+                      count: widget.story.contentCount,
+                      controller:
+                          _provider!.controller.flowManager.indicatorController,
+                      style: _provider!.style.indicatorStyle,
+                    )
+                  : StoryIndicator.placeholder(
+                      count: widget.story.contentCount,
+                      style: _provider!.style.indicatorStyle,
+                    );
+            },
+          ),
+        ],
       ),
     );
   }

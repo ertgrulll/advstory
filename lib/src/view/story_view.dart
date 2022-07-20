@@ -71,7 +71,7 @@ class _StoryViewState extends State<StoryView> {
             // the last page
             itemBuilder: (context, index) {
               // If user swipes past the last page, return an empty view
-              //  before closing story view.
+              // before closing story view.
               if (index >= _provider!.controller.storyCount) {
                 return const SizedBox();
               }
@@ -129,6 +129,8 @@ class _StoryViewState extends State<StoryView> {
 
       _delta += delta;
       pageCont.jumpTo(-delta + pageCont.position.pixels);
+      final width = _key.currentContext!.size!.width;
+      if (_delta.abs() < width * .2) cont.resume();
     } else if (_event == StoryEvent.close) {
       _interception!();
     } else {

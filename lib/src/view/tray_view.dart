@@ -6,6 +6,7 @@ import 'package:advstory/src/contants/types.dart';
 import 'package:advstory/src/controller/advstory_controller_impl.dart';
 import 'package:advstory/src/util/build_helper.dart';
 import 'package:advstory/src/view/components/tray/tray_animation_manager.dart';
+import 'package:advstory/src/view/components/tray/tray_position_provider.dart';
 import 'package:advstory/src/view/inherited_widgets/data_provider.dart';
 import 'package:advstory/src/view/story_view.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +54,7 @@ class TrayView extends StatefulWidget {
 class _TrayViewState extends State<TrayView> with TickerProviderStateMixin {
   /// Controls story view position.
   late final AnimationController _posController;
+  TrayAnimationManager? _trayAnimationManager;
 
   /// Used to determine whether a story can be shown or not.
   bool _canShowStory = true;
@@ -95,11 +97,13 @@ class _TrayViewState extends State<TrayView> with TickerProviderStateMixin {
   }) async {
     if (!_canShowStory) return;
 
-    bool isAnimated = tray is TrayAnimationManager;
+    bool isAnimated = tray is TrayPositionProvider;
     final pos = widget.controller.trayTapInterceptor?.call(index) ??
         StoryPosition(0, index);
 
-    if (isAnimated) tray.update(shouldAnimate: true);
+    if (isAnimated) {
+      _trayAnimationManager!.update(shouldAnimate: true, index: index);
+    }
 
     _posController.reset();
     _canShowStory = false;
@@ -150,7 +154,7 @@ class _TrayViewState extends State<TrayView> with TickerProviderStateMixin {
           }
         }
 
-        tray.update(shouldAnimate: false);
+        _trayAnimationManager!.update(shouldAnimate: false, index: index);
       }
 
       if (widget.style.hideBars) {
@@ -182,36 +186,41 @@ class _TrayViewState extends State<TrayView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: widget.style.trayListStyle.padding,
-      scrollDirection: widget.style.trayListStyle.direction,
-      itemCount: widget.controller.storyCount,
-      itemBuilder: (context, index) {
-        if (widget.buildStoryOnTrayScroll) {
-          widget.buildHelper.prepareStory(index);
-        }
+    return _trayAnimationManager ??= TrayAnimationManager(
+      child: ListView.separated(
+        padding: widget.style.trayListStyle.padding,
+        scrollDirection: widget.style.trayListStyle.direction,
+        itemCount: widget.controller.storyCount,
+        itemBuilder: (context, index) {
+          if (widget.buildStoryOnTrayScroll) {
+            widget.buildHelper.prepareStory(index);
+          }
 
-        Widget tray = widget.trayBuilder(index);
-        if (tray is AnimatedTray) {
-          tray = TrayAnimationManager(child: tray);
-        }
+          Widget tray = widget.trayBuilder(index);
+          if (tray is AnimatedTray) {
+            tray = TrayPositionProvider(
+              index: index,
+              child: tray,
+            );
+          }
 
-        return GestureDetector(
-          onTap: () => _handleTrayTap(
-            context: context,
-            tray: tray,
-            index: index,
-          ),
-          child: tray,
-        );
-      },
-      separatorBuilder: (context, index) => SizedBox(
-        width: widget.style.trayListStyle.direction == Axis.vertical
-            ? 0
-            : widget.style.trayListStyle.spacing,
-        height: widget.style.trayListStyle.direction == Axis.horizontal
-            ? 0
-            : widget.style.trayListStyle.spacing,
+          return GestureDetector(
+            onTap: () => _handleTrayTap(
+              context: context,
+              tray: tray,
+              index: index,
+            ),
+            child: tray,
+          );
+        },
+        separatorBuilder: (context, index) => SizedBox(
+          width: widget.style.trayListStyle.direction == Axis.vertical
+              ? 0
+              : widget.style.trayListStyle.spacing,
+          height: widget.style.trayListStyle.direction == Axis.horizontal
+              ? 0
+              : widget.style.trayListStyle.spacing,
+        ),
       ),
     );
   }

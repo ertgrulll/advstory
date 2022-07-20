@@ -17,8 +17,16 @@ class StoryIndicator extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  StoryIndicator.placeholder({
+    required this.count,
+    required this.style,
+    Key? key,
+  })  : activeIndicatorIndex = -1,
+        controller = null,
+        super(key: key);
+
   /// Indicator progress controller.
-  final AnimationController controller;
+  final AnimationController? controller;
 
   /// The number of indicators to display.
   final int count;
@@ -34,7 +42,9 @@ class StoryIndicator extends StatelessWidget {
   final List<Widget> _indicators = [];
 
   void _generateIndicators() {
-    final animation = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
+    final animation = controller != null
+        ? Tween<double>(begin: 0.0, end: 1.0).animate(controller!)
+        : null;
     if (_indicators.isNotEmpty) return;
 
     final indicators = List<Widget>.generate(
@@ -55,13 +65,11 @@ class StoryIndicator extends StatelessWidget {
         } else {
           return Expanded(
             child: AnimatedBuilder(
-              animation: animation,
+              animation: animation!,
               builder: (context, child) {
                 return LinearProgressIndicator(
                   backgroundColor: style.backgroundColor,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    style.valueColor,
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(style.valueColor),
                   value: animation.value,
                   minHeight: style.height,
                 );

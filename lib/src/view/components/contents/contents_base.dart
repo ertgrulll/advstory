@@ -13,7 +13,7 @@ import 'package:advstory/src/view/components/contents/image_content.dart';
 import 'package:advstory/src/view/components/contents/video_content.dart';
 import 'package:advstory/src/view/components/tray/animated_tray.dart';
 import 'package:advstory/src/view/inherited_widgets/data_provider.dart';
-import 'package:advstory/src/view/inherited_widgets/position_provider.dart';
+import 'package:advstory/src/view/inherited_widgets/content_position_provider.dart';
 import 'package:flutter/material.dart';
 
 const _excMessage = 'AdvStory fields didn\'t set yet, '
@@ -43,7 +43,7 @@ abstract class StoryContent extends StatefulWidget implements AdvStoryContent {
 /// to story contents.
 abstract class StoryContentState<T extends StoryContent> extends State<T> {
   final _cron = Cron();
-  PositionProvider? _positionProvider;
+  ContentPositionProvider? _positionProvider;
   DataProvider? _dataProvider;
   late final Duration _contentDuration;
   StoryStatus _status = StoryStatus.stop;
@@ -208,7 +208,7 @@ abstract class StoryContentState<T extends StoryContent> extends State<T> {
     super.didChangeDependencies();
 
     if (_positionProvider == null) {
-      _positionProvider = PositionProvider.of(context)!;
+      _positionProvider = ContentPositionProvider.of(context)!;
       _dataProvider = DataProvider.of(context)!;
 
       _dataProvider!.positionNotifier.addListener(

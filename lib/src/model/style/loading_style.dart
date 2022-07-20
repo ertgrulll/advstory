@@ -1,4 +1,4 @@
-import 'package:advstory/src/view/default_components/adv_story_tray.dart';
+import 'package:advstory/src/view/default_components/advstory_tray.dart';
 import 'package:flutter/material.dart';
 
 /// Loading indicator styles. AdvStory creates a rotated indicator using this

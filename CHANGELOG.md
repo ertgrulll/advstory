@@ -59,3 +59,10 @@
 ***Enhancements***
 - Allowed to changing `storyCount` by setting state to make story pagination possible, [#14](https://github.com/ertgrulll/advstory/issues/14).
 - Removed unnecessary `AnimatedBuilder`s.
+
+# 0.2.1
+***Bug fixes***
+
+- Fixed tray animation not start issue.
+- Fixed story stop on page change cancel. 
+- Fixed story indicator progress on next story page.
