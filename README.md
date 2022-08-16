@@ -1,6 +1,6 @@
 <img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FLZoq1vLHUTwBd2vqtB84%2Fuploads%2FanFNgKBQRGFKJQ7HK2It%2Fanimated_tray_cover.gif?alt=media&token=7e42ec27-fcec-48d5-8d97-6250d60b5b23">
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/ertgrulll) [![pub package](https://img.shields.io/pub/v/advstory.svg)](https://pub.dev/packages/advstory) [![popularity](https://badges.bar/advstory/popularity)](https://pub.dev/packages/advstory/score) [![likes](https://badges.bar/advstory/likes)](https://pub.dev/packages/advstory/score) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/ertgrulll/advstory)](https://github.com/ertgrulll/advstory/issues)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/ertgrulll) [![pub package](https://img.shields.io/pub/v/advstory.svg)](https://pub.dev/packages/advstory) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/ertgrulll/advstory)](https://github.com/ertgrulll/advstory/issues)
 
 ## AdvStory 📸
 
