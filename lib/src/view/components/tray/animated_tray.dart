@@ -47,7 +47,7 @@ abstract class AnimatedTrayState<T extends AnimatedTray> extends State<T> {
   @mustCallSuper
   void didChangeDependencies() {
     if (_manager == null) {
-      _position = TrayPositionProvider.of(context)!.index;
+      _position = TrayPositionProvider.of(context)?.index;
       _manager = TrayAnimationManager.of(context);
       _manager!.addListener(_animationListener, _position);
     }
