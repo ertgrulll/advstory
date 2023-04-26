@@ -9,12 +9,16 @@ class StoryHeader extends StatelessWidget {
   const StoryHeader({
     required this.url,
     required this.text,
+    this.imageSize = const Size(50, 50),
     this.shimmerStyle = const ShimmerStyle(),
     Key? key,
   }) : super(key: key);
 
   /// Image url for the user profile picture.
   final String url;
+  
+  ///image height and width
+  final Size imageSize;
 
   /// Most probably a text for the user name.
   final String text;
@@ -25,12 +29,12 @@ class StoryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, top: 10),
+      padding: const EdgeInsets.only(left: 10, top: 25),
       child: Row(
         children: [
           SizedBox(
-            width: 50,
-            height: 50,
+            width: imageSize.width,
+            height: imageSize.height,
             child: ClipOval(
               child: Image.network(
                 url,
