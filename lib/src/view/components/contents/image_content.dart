@@ -22,6 +22,8 @@ class ImageContent extends ManagedContent {
   const ImageContent({
     required String url,
     this.duration = const Duration(seconds: 10),
+    this.boxFit = BoxFit.cover,
+    this.backgroundColor = Colors.black,
     Map<String, String>? requestHeaders,
     String? cacheKey,
     Widget? header,
@@ -42,6 +44,8 @@ class ImageContent extends ManagedContent {
 
   /// Skip duration of the content.
   final Duration duration;
+  final BoxFit boxFit;
+  final backgroundColor;
 
   @override
   StoryContentState<ImageContent> createState() => _ImageContentState();
@@ -83,6 +87,7 @@ class _ImageContentState extends StoryContentState<ImageContent> {
 
     if (_imageProvider != null) {
       return Container(
+        color: widget.backgroundColor,
         constraints: const BoxConstraints.expand(),
         child: Image(
           image: _imageProvider!,
@@ -94,7 +99,7 @@ class _ImageContentState extends StoryContentState<ImageContent> {
                     duration: const Duration(milliseconds: 300),
                   );
           },
-          fit: BoxFit.cover,
+          fit: widget.boxFit,
           gaplessPlayback: true,
         ),
       );
