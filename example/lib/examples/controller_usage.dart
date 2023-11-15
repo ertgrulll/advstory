@@ -1,7 +1,7 @@
+import 'package:advstory/advstory.dart';
 import 'package:example/examples/interceptor.dart';
 import 'package:example/mock_story_data.dart';
 import 'package:flutter/material.dart';
-import 'package:advstory/advstory.dart';
 
 class ControllerUsage extends StatefulWidget {
   const ControllerUsage({Key? key}) : super(key: key);
