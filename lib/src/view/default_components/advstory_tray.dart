@@ -33,6 +33,9 @@ class AdvStoryTray extends AnimatedTray {
     this.size = const Size(80, 80),
     this.shimmerStyle = const ShimmerStyle(),
     this.shape = BoxShape.circle,
+    this.heightFrontImageProfile = 29,
+    this.widthFrontImageProfile = 29,
+    this.urlFrontImageProfile = '',
     this.borderGradientColors = const [
       Color(0xaf405de6),
       Color(0xaf5851db),
@@ -69,6 +72,9 @@ class AdvStoryTray extends AnimatedTray {
   /// Size of the story tray. For a circular tray, width and height must be
   /// equal.
   final Size size;
+  final double widthFrontImageProfile;
+  final double heightFrontImageProfile;
+  final String urlFrontImageProfile;
 
   /// Border gradient colors. Two same color creates a solid border.
   final List<Color> borderGradientColors;
@@ -161,78 +167,103 @@ class _AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: widget.size.width,
-          height: widget.size.height,
-          child: Stack(
+    return SizedBox(
+      width: widget.size.width,
+      height: widget.size.height + 14,
+      child: Stack(
+        children: [
+          Column(
             children: [
-              CustomPaint(
-                painter: AnimatedBorderPainter(
-                  gradientColors: _gradientColors,
-                  gapSize: widget.gapSize,
-                  radius: widget.shape == BoxShape.circle
-                      ? widget.size.width
-                      : widget.borderRadius,
-                  strokeWidth: widget.strokeWidth,
-                  animation: CurvedAnimation(
-                    parent: Tween(begin: 0.0, end: 1.0).animate(
-                      _rotationController,
+              SizedBox(
+                width: widget.size.width,
+                height: widget.size.height,
+                child: Stack(
+                  children: [
+                    CustomPaint(
+                      painter: AnimatedBorderPainter(
+                        gradientColors: _gradientColors,
+                        gapSize: widget.gapSize,
+                        radius: widget.shape == BoxShape.circle
+                            ? widget.size.width
+                            : widget.borderRadius,
+                        strokeWidth: widget.strokeWidth,
+                        animation: CurvedAnimation(
+                          parent: Tween(begin: 0.0, end: 1.0).animate(
+                            _rotationController,
+                          ),
+                          curve: Curves.slowMiddle,
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: widget.size.width,
+                        height: widget.size.height,
+                      ),
                     ),
-                    curve: Curves.slowMiddle,
-                  ),
-                ),
-                child: SizedBox(
-                  width: widget.size.width,
-                  height: widget.size.height,
-                ),
-              ),
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    widget.borderRadius - (widget.strokeWidth + widget.gapSize),
-                  ),
-                  child: Image.network(
-                    widget.url,
-                    width: widget.size.width -
-                        (widget.gapSize + widget.strokeWidth) * 2,
-                    height: widget.size.height -
-                        (widget.gapSize + widget.strokeWidth) * 2,
-                    fit: BoxFit.cover,
-                    frameBuilder: (context, child, frame, _) {
-                      return frame != null
-                          ? TweenAnimationBuilder<double>(
-                              tween: Tween<double>(begin: .1, end: 1),
-                              curve: Curves.ease,
-                              duration: const Duration(milliseconds: 300),
-                              builder:
-                                  (BuildContext context, double opacity, _) {
-                                return Opacity(
-                                  opacity: opacity,
-                                  child: child,
-                                );
-                              },
-                            )
-                          : Shimmer(style: widget.shimmerStyle);
-                    },
-                    errorBuilder: (_, __, ___) {
-                      return const Icon(Icons.error);
-                    },
-                  ),
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                          widget.borderRadius -
+                              (widget.strokeWidth + widget.gapSize),
+                        ),
+                        child: Image.network(
+                          widget.url,
+                          width: widget.size.width -
+                              (widget.gapSize + widget.strokeWidth) * 2,
+                          height: widget.size.height -
+                              (widget.gapSize + widget.strokeWidth) * 2,
+                          fit: BoxFit.cover,
+                          frameBuilder: (context, child, frame, _) {
+                            return frame != null
+                                ? TweenAnimationBuilder<double>(
+                                    tween: Tween<double>(begin: .1, end: 1),
+                                    curve: Curves.ease,
+                                    duration: const Duration(milliseconds: 300),
+                                    builder: (BuildContext context,
+                                        double opacity, _) {
+                                      return Opacity(
+                                        opacity: opacity,
+                                        child: child,
+                                      );
+                                    },
+                                  )
+                                : Shimmer(style: widget.shimmerStyle);
+                          },
+                          errorBuilder: (_, __, ___) {
+                            return const Icon(Icons.error);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (widget.username != null) ...[
+                const SizedBox(height: 5),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: widget.username,
+                ),
+              ],
             ],
           ),
-        ),
-        if (widget.username != null) ...[
-          const SizedBox(height: 5),
           Align(
             alignment: Alignment.bottomCenter,
-            child: widget.username,
-          ),
+            child: Container(
+              width: widget.widthFrontImageProfile,
+              height: widget.heightFrontImageProfile,
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(widget.urlFrontImageProfile.isEmpty
+                          ? widget.urlFrontImageProfile
+                          : widget.urlFrontImageProfile),
+                      fit: BoxFit.cover),
+                  border: Border.all(color: Colors.white),
+                  shape: BoxShape.circle,
+                  color: Colors.blueGrey),
+            ),
+          )
         ],
-      ],
+      ),
     );
   }
 }
