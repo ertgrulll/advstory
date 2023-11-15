@@ -30,6 +30,8 @@ class AdvStoryTray extends AnimatedTray {
     Key? key,
     required this.url,
     this.username,
+    this.isMyProfile = false,
+    this.onTapProfile,
     this.size = const Size(80, 80),
     this.shimmerStyle = const ShimmerStyle(),
     this.shape = BoxShape.circle,
@@ -75,6 +77,8 @@ class AdvStoryTray extends AnimatedTray {
   final double widthFrontImageProfile;
   final double heightFrontImageProfile;
   final String urlFrontImageProfile;
+  final Function? onTapProfile;
+  final bool isMyProfile;
 
   /// Border gradient colors. Two same color creates a solid border.
   final List<Color> borderGradientColors;
@@ -246,22 +250,57 @@ class _AdvStoryTrayState extends AnimatedTrayState<AdvStoryTray>
               ],
             ],
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: widget.widthFrontImageProfile,
-              height: widget.heightFrontImageProfile,
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: NetworkImage(widget.urlFrontImageProfile.isEmpty
-                          ? widget.urlFrontImageProfile
-                          : widget.urlFrontImageProfile),
-                      fit: BoxFit.cover),
-                  border: Border.all(color: Colors.white),
-                  shape: BoxShape.circle,
-                  color: Colors.blueGrey),
-            ),
-          )
+          if (widget.isMyProfile)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: InkWell(
+                onTap: () {
+                  if (widget.onTapProfile != null) {
+                    widget.onTapProfile!();
+                  }
+                },
+                child: Container(
+                  width: widget.widthFrontImageProfile,
+                  height: widget.heightFrontImageProfile,
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white),
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFFFB84C)),
+                  child: const Center(
+                    child: Icon(
+                      Icons.add,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: InkWell(
+                onTap: () {
+                  if (widget.onTapProfile != null) {
+                    widget.onTapProfile!();
+                  }
+                },
+                child: Container(
+                  width: widget.widthFrontImageProfile,
+                  height: widget.heightFrontImageProfile,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: NetworkImage(
+                              widget.urlFrontImageProfile.isEmpty
+                                  ? widget.urlFrontImageProfile
+                                  : widget.urlFrontImageProfile),
+                          fit: BoxFit.cover),
+                      border: Border.all(color: Colors.white),
+                      shape: BoxShape.circle,
+                      color: Colors.blueGrey),
+                ),
+              ),
+            )
         ],
       ),
     );
